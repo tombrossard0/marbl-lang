@@ -37,6 +37,7 @@ STRING      \"(.)+\"
 
 ","                         { REPLACE(TokenType::COMMA, yytext); }
 "."                         { REPLACE(TokenType::DOT, yytext); }
+":"                         { REPLACE(TokenType::COLON, yytext); }
 
 "-"                         { REPLACE(TokenType::MINUS, yytext); }
 "+"                         { REPLACE(TokenType::PLUS, yytext); }
@@ -51,6 +52,11 @@ STRING      \"(.)+\"
 ">"                         { REPLACE(TokenType::GREATER, yytext); }
 "=="                        { REPLACE(TokenType::EQUAL_EQUAL, yytext); }
 "="                         { REPLACE(TokenType::EQUAL, yytext); }
+
+"-="                         { REPLACE(TokenType::MINUS_EQUAL, yytext); }
+"+="                         { REPLACE(TokenType::PLUS_EQUAL, yytext); }
+"/="                         { REPLACE(TokenType::SLASH_EQUAL, yytext); }
+"*="                         { REPLACE(TokenType::STAR_EQUAL, yytext); }
 
 "class"                     { REPLACE(TokenType::CLASS, yytext); }
 "super"                     { REPLACE(TokenType::SUPER, yytext); }

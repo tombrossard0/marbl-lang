@@ -14,12 +14,18 @@ enum TokenType {
 
     COMMA,
     DOT,
+    COLON,
 
     // Operators
     MINUS,
     PLUS,
     SLASH,
     STAR,
+
+    MINUS_EQUAL,
+    PLUS_EQUAL,
+    SLASH_EQUAL,
+    STAR_EQUAL,
 
     // Comparators
     BANG,
@@ -81,6 +87,8 @@ inline const char *TokenTypeName(TokenType type) {
         return "COMMA";
     case DOT:
         return "DOT";
+    case COLON:
+        return "COLON";
     case MINUS:
         return "MINUS";
     case PLUS:
@@ -91,6 +99,14 @@ inline const char *TokenTypeName(TokenType type) {
         return "SLASH";
     case STAR:
         return "STAR";
+    case PLUS_EQUAL:
+        return "PLUS_EQUAL";
+    case MINUS_EQUAL:
+        return "MINUS_EQUAL";
+    case SLASH_EQUAL:
+        return "SLASH_EQUAL";
+    case STAR_EQUAL:
+        return "STAR_EQUAL";
     case BANG:
         return "BANG";
     case BANG_EQUAL:
