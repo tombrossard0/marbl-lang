@@ -1,5 +1,21 @@
 #include "marbl.hpp"
 
+#include <vector>
+
+#include "lexer.hpp"
+#include "tokens.hpp"
+
+int Marbl::run(const std::string &source) {
+    Lexer lexer(source);
+    std::vector<Token> tokens = lexer.scanTokens();
+
+    for (Token token : tokens) { std::cout << token << std::endl; }
+
+    if (hadError) EX_DATAERR;
+
+    return EX_OK;
+}
+
 int Marbl::runFile(char *filepath) {
     std::ifstream inputFile(filepath);
 

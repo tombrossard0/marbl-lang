@@ -13,21 +13,10 @@ class Marbl {
         hadError = true;
     }
 
+    static int run(const std::string &source);
+
   public:
     inline static bool hadError = false;
-
-    static int run(std::string source) {
-        // Scanner scanner(source);
-        // std::vec<Token> tokens = scanner.scanTokens();
-
-        // for (Token token : tokens) {
-        //      std::cout << token << std::endl;
-        // }
-
-        if (hadError) EX_DATAERR;
-
-        return EX_OK;
-    }
 
     static int runFile(char *filepath);
     static int runPrompt();

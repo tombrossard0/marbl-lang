@@ -2,7 +2,6 @@ add_executable(marbl_app main.cpp)
 
 target_link_libraries(marbl_app
     PRIVATE
-        lexer
         marbl
 )
 
