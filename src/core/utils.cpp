@@ -1,3 +1,3 @@
 #include "utils.hpp"
 
-namespace Marbl {}
+namespace Utils {}

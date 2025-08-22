@@ -2,8 +2,8 @@
 
 #include "utils.hpp"
 
-namespace Marbl {
+namespace Marbl::Lexer {
 void hello_lexer() {
-    std::cout << trim("     Hello Lexer!    ") << std::endl;
+    std::cout << Utils::trim("     Hello Lexer!    ") << std::endl;
 }
-} // namespace Marbl
+} // namespace Marbl::Lexer
