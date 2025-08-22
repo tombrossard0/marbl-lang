@@ -42,7 +42,7 @@ ID          {LETTER}({LETTER}|{DIGIT})*
 "=="                        { REPLACE(TokenType::EQUAL_EQUAL, yytext, yytext, current_line, yyleng); }
 "="                         { REPLACE(TokenType::EQUAL, yytext, yytext, current_line, yyleng); }
 
-{DIGIT}+\.?{DIGIT}*                    { REPLACE(TokenType::NUMBER, yytext, yytext, current_line, yyleng); }
+({DIGIT}+\.?{DIGIT}*|{DIGIT}*\.{DIGIT}+) { REPLACE(TokenType::NUMBER, yytext, yytext, current_line, yyleng); }
 {ID}                        { REPLACE(TokenType::IDENTIFIER, yytext, yytext, current_line, yyleng); }
 \"(.)+\"                    { REPLACE(TokenType::STRING, yytext, std::string_view(yytext + 1, yyleng - 2), current_line, yyleng); }
 
