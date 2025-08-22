@@ -4,8 +4,8 @@
 
 #include "utils.hpp"
 
-namespace Marbl::Lexer {
+namespace Lexer {
 void hello_lexer() {
     std::cout << Utils::trim("     Hello Lexer!    ") << std::endl;
 }
-} // namespace Marbl::Lexer
+} // namespace Lexer

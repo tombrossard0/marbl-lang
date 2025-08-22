@@ -3,37 +3,7 @@
 
 #include "errors.hpp"
 #include "lexer.hpp"
-
-namespace Marbl {
-int runFile(char *filepath) {
-    std::ifstream inputFile(filepath);
-
-    if (!inputFile) {
-        std::cerr << "Cannot open input file!" << std::endl;
-        return EX_NOINPUT;
-    }
-
-    std::string line;
-    while (std::getline(inputFile, line)) { std::cout << line << std::endl; }
-
-    inputFile.close();
-
-    return EX_OK;
-}
-
-int runPrompt() {
-    std::string line;
-
-    bool isRunning;
-    do {
-        std::cout << "> ";
-        isRunning = static_cast<bool>(std::getline(std::cin, line));
-        std::cout << line << std::endl;
-    } while (line != "exit" && isRunning);
-
-    return EX_OK;
-}
-} // namespace Marbl
+#include "marbl.hpp"
 
 // We follow the conventions defined in UNIX "sysexits.h" header for exit codes:
 // (https://man.freebsd.org/cgi/man.cgi?query=sysexits&apropos=0&sektion=0&manpath=FreeBSD+4.3-RELEASE&format=html).
@@ -47,6 +17,6 @@ int main(int argc, char **argv) {
         return Marbl::runPrompt();
     }
 
-    Marbl::Lexer::hello_lexer();
+    Lexer::hello_lexer();
     return EX_OK;
 }

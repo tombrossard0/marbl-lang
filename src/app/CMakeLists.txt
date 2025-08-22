@@ -1,11 +1,12 @@
-add_executable(marbl main.cpp)
+add_executable(marbl_app main.cpp)
 
-target_link_libraries(marbl
+target_link_libraries(marbl_app
     PRIVATE
         lexer
+        marbl
 )
 
 # Put the executable directly in the build/ folder
-set_target_properties(marbl PROPERTIES
+set_target_properties(marbl_app PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 )

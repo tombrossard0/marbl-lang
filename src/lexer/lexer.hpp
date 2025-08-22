@@ -1,6 +1,5 @@
 #pragma once
 
-namespace Marbl::Lexer {
+namespace Lexer {
 void hello_lexer();
-
-} // namespace Marbl::Lexer
+}
