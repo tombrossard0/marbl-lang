@@ -24,11 +24,12 @@ int runFile(char *filepath) {
 int runPrompt() {
     std::string line;
 
+    bool isRunning;
     do {
         std::cout << "> ";
-        std::getline(std::cin, line);
+        isRunning = static_cast<bool>(std::getline(std::cin, line));
         std::cout << line << std::endl;
-    } while (line != "exit");
+    } while (line != "exit" && isRunning);
 
     return EX_OK;
 }
