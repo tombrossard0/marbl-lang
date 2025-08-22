@@ -1,5 +1,6 @@
 #pragma once
 
-namespace Lexer {
-void hello_lexer();
-}
+class Lexer {
+  public:
+    static void hello_lexer();
+};
