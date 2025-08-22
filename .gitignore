@@ -33,9 +33,13 @@
 *.lib
 
 # Executables
+build/
 *.exe
 *.out
 *.app
 
 # debug information files
 *.dwo
+
+# Vscode
+.vscode
