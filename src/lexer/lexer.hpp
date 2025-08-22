@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef __FLEX_LEXER_H
+    #include <FlexLexer.h>
+#endif
+
 #include <string>
 #include <vector>
 
@@ -7,10 +11,12 @@
 
 class Lexer {
   public:
-    Lexer(const std::string &src) : source(src) {};
+    inline static Token currentToken{};
 
-    std::vector<Token> scanTokens();
+    Lexer(std::istream &input) : scanner(&input) {};
+
+    int nextToken();
 
   private:
-    std::string source;
+    yyFlexLexer scanner;
 };

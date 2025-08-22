@@ -4,7 +4,20 @@
 %option header-file="lexer.yy.hpp"
 
 %{
-#include "tokens.hpp"
+#include "lexer.hpp"
+#include <iostream>
+
+#define REPLACE(TYPE, LEXEME, LITERAL, LINE, LEN)\
+    Lexer::currentToken.type = TYPE;\
+    Lexer::currentToken.lexeme = LEXEME;\
+    Lexer::currentToken.literal = LITERAL;\
+    Lexer::currentToken.line = LINE;\
+    Lexer::currentToken.col = current_col;\
+    current_col += LEN;\
+    return TYPE;
+
+int current_line = 1;
+int current_col = 1;
 %}
 
 DIGIT       [0-9]
@@ -13,18 +26,23 @@ ID          {LETTER}({LETTER}|{DIGIT})*
 
 %%
 
-[ \t\n]+                    ; // skip whitespace
+"let"                       { REPLACE(TokenType::LET, yytext, yytext, current_line, yyleng); }
 
-"let"                       { return static_cast<int>(TokenType::LET); }
+[ \t]+                      { current_col += yyleng; } // skip whitespace
+;                           { REPLACE(TokenType::SEMICOLON, yytext, yytext, current_line, yyleng); }
 
-"="                         { return static_cast<int>(TokenType::EQUAL); }
+\r\n                        { current_line++; current_col = 1; }
+\r                          { current_line++; current_col = 1; }
+\n                          { current_line++; current_col = 1; }
 
-";"                         { return static_cast<int>(TokenType::SEMICOLON); }
+=                           { REPLACE(TokenType::EQUAL, yytext, yytext, current_line, yyleng); }
 
-{DIGIT}+                    { return static_cast<int>(TokenType::NUMBER); }
-{ID}                        { return static_cast<int>(TokenType::IDENTIFIER); }
-"\""({LETTER}|{DIGIT})+"\"" { return static_cast<int>(TokenType::STRING); }
+{DIGIT}+                    { REPLACE(TokenType::NUMBER, yytext, yytext, current_line, yyleng); }
+{ID}                        { REPLACE(TokenType::IDENTIFIER, yytext, yytext, current_line, yyleng); }
+\"({LETTER}|{DIGIT})+\"     { REPLACE(TokenType::STRING, yytext, std::string_view(yytext + 1, yyleng - 2), current_line, yyleng); }
 
-.                           { return static_cast<int>(TokenType::ERROR); }
+<<EOF>>                     { REPLACE(TokenType::T_EOF, yytext, yytext, current_line, yyleng); }
+
+.                           { REPLACE(TokenType::ERROR, yytext, yytext, current_line, yyleng); };
 
 %%

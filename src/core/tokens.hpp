@@ -3,6 +3,8 @@
 #include <iostream>
 
 enum TokenType {
+    ERROR = -1,
+
     // Single-character tokens.
     LEFT_PAREN,
     RIGHT_PAREN,
@@ -49,9 +51,9 @@ enum TokenType {
     LET,
     WHILE,
 
+    NEWLINE,
+    T_SOF, // Start of File
     T_EOF,
-
-    ERROR = -1,
 };
 
 inline const char *TokenTypeName(TokenType type) {
@@ -132,6 +134,10 @@ inline const char *TokenTypeName(TokenType type) {
         return "LET";
     case WHILE:
         return "WHILE";
+    case NEWLINE:
+        return "NEWLINE";
+    case T_SOF:
+        return "T_SOF";
     case T_EOF:
         return "T_EOF";
     case ERROR:
@@ -143,17 +149,19 @@ inline const char *TokenTypeName(TokenType type) {
 
 class Token {
   public:
-    const TokenType type;
-    const std::string lexeme;
-    const std::string literal;
-    const int line;
+    TokenType type;
+    std::string lexeme;
+    std::string literal;
+    int line;
+    int col;
 
-    Token(TokenType type, std::string lexeme, std::string literal, int line)
-        : type(type), lexeme(lexeme), literal(literal), line(line) {}
+    Token() : type(TokenType::T_SOF), lexeme("T_SOF"), literal("T_SOF"), line(0) {}
+    Token(TokenType type, std::string lexeme, std::string literal, int line, int col)
+        : type(type), lexeme(lexeme), literal(literal), line(line), col(col) {}
     ~Token() {};
 
     inline friend std::ostream &operator<<(std::ostream &os, const Token &t) {
-        os << TokenTypeName(t.type) << " " << t.lexeme << " " << t.literal;
+        os << TokenTypeName(t.type) << " " << t.lexeme << " " << t.literal << " " << t.line << ":" << t.col;
         return os;
     };
 };

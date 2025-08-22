@@ -13,8 +13,6 @@ class Marbl {
         hadError = true;
     }
 
-    static int run(const std::string &source);
-
   public:
     inline static bool hadError = false;
 

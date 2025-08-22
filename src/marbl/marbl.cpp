@@ -5,17 +5,6 @@
 #include "lexer.hpp"
 #include "tokens.hpp"
 
-int Marbl::run(const std::string &source) {
-    Lexer lexer(source);
-    std::vector<Token> tokens = lexer.scanTokens();
-
-    for (Token token : tokens) { std::cout << token << std::endl; }
-
-    if (hadError) EX_DATAERR;
-
-    return EX_OK;
-}
-
 int Marbl::runFile(char *filepath) {
     std::ifstream inputFile(filepath);
 
@@ -24,29 +13,33 @@ int Marbl::runFile(char *filepath) {
         return EX_NOINPUT;
     }
 
-    std::string line;
-    while (std::getline(inputFile, line) && !hadError) {
-        std::cout << line << std::endl;
-        run(line);
+    Lexer lexer(inputFile);
+    int currentType;
+    while ((currentType = lexer.nextToken()) != TokenType::T_EOF) {
+        std::cout << lexer.currentToken << std::endl;
     }
 
     inputFile.close();
+
+    if (hadError) EX_DATAERR;
 
     return EX_OK;
 }
 
 int Marbl::runPrompt() {
-    std::string line;
+    int currentType = TokenType::T_SOF;
 
-    bool isRunning;
     do {
-        std::cout << "> ";
-        isRunning = static_cast<bool>(std::getline(std::cin, line));
-        std::cout << line << std::endl;
+        Lexer lexer(std::cin);
 
-        run(line);
-        hadError = false;
-    } while (line != "exit" && isRunning);
+        std::cout << "> ";
+        while ((currentType = lexer.nextToken()) != TokenType::SEMICOLON && currentType != TokenType::T_EOF) {
+            std::cout << lexer.currentToken << std::endl;
+        }
+        std::cout << lexer.currentToken << std::endl;
+    } while (currentType != TokenType::T_EOF);
+
+    if (hadError) EX_DATAERR;
 
     return EX_OK;
 }
