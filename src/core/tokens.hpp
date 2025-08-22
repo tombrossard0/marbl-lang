@@ -5,20 +5,23 @@
 enum TokenType {
     ERROR = -1,
 
-    // Single-character tokens.
+    // Single-character tokens
     LEFT_PAREN,
     RIGHT_PAREN,
+
     LEFT_BRACE,
     RIGHT_BRACE,
+
     COMMA,
     DOT,
+
+    // Operators
     MINUS,
     PLUS,
-    SEMICOLON,
     SLASH,
     STAR,
 
-    // One or two character tokens.
+    // Comparators
     BANG,
     BANG_EQUAL,
     EQUAL,
@@ -28,29 +31,37 @@ enum TokenType {
     LESS,
     LESS_EQUAL,
 
-    // Literals.
-    IDENTIFIER,
-    STRING,
-    NUMBER,
-
-    // Keywords.
-    AND,
+    // Keywords
     CLASS,
-    ELSE,
-    FALSE,
-    FUN,
-    FOR,
-    IF,
-    NIL,
-    OR,
-    PRINT,
-    RETURN,
     SUPER,
     THIS,
-    TRUE,
-    LET,
+
+    FUN,
+    RETURN,
+    AWAIT,
+
+    IF,
+    ELSE,
+    FOR,
     WHILE,
 
+    AND,
+    OR,
+
+    FALSE,
+    TRUE,
+
+    LET,
+
+    // Literals
+    NUMBER,
+    IDENTIFIER,
+    STRING,
+
+    PRINT,
+
+    // Sepatators
+    SEMICOLON,
     NEWLINE,
     T_SOF, // Start of File
     T_EOF,
@@ -112,12 +123,12 @@ inline const char *TokenTypeName(TokenType type) {
         return "FALSE";
     case FUN:
         return "FUN";
+    case AWAIT:
+        return "AWAIT";
     case FOR:
         return "FOR";
     case IF:
         return "IF";
-    case NIL:
-        return "NIL";
     case OR:
         return "OR";
     case PRINT:

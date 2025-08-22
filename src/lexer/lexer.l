@@ -7,13 +7,13 @@
 #include "lexer.hpp"
 #include <iostream>
 
-#define REPLACE(TYPE, LEXEME, LITERAL, LINE, LEN)\
+#define REPLACE(TYPE, LITERAL)\
     Lexer::currentToken.type = TYPE;\
-    Lexer::currentToken.lexeme = LEXEME;\
+    Lexer::currentToken.lexeme = yytext;\
     Lexer::currentToken.literal = LITERAL;\
-    Lexer::currentToken.line = LINE;\
+    Lexer::currentToken.line = current_line;\
     Lexer::currentToken.col = current_col;\
-    current_col += LEN;\
+    current_col += yyleng;\
     return TYPE;
 
 int current_line = 1;
@@ -24,30 +24,64 @@ DIGIT       [0-9]
 LETTER      [a-zA-Z]
 ID          {LETTER}({LETTER}|{DIGIT})*
 
+NUMBER      ({DIGIT}+\.?{DIGIT}*|{DIGIT}*\.{DIGIT}+)
+STRING      \"(.)+\"
+
 %%
 
-"let"                       { REPLACE(TokenType::LET, yytext, yytext, current_line, yyleng); }
+"("                         { REPLACE(TokenType::LEFT_PAREN, yytext); }
+")"                         { REPLACE(TokenType::RIGHT_PAREN, yytext); }
+
+"{"                         { REPLACE(TokenType::LEFT_BRACE, yytext); }
+"}"                         { REPLACE(TokenType::RIGHT_BRACE, yytext); }
+
+","                         { REPLACE(TokenType::COMMA, yytext); }
+"."                         { REPLACE(TokenType::DOT, yytext); }
+
+"-"                         { REPLACE(TokenType::MINUS, yytext); }
+"+"                         { REPLACE(TokenType::PLUS, yytext); }
+"/"                         { REPLACE(TokenType::SLASH, yytext); }
+"*"                         { REPLACE(TokenType::STAR, yytext); }
+
+"!"                         { REPLACE(TokenType::BANG, yytext); }
+"!="                        { REPLACE(TokenType::BANG_EQUAL, yytext); }
+"<="                        { REPLACE(TokenType::LESS_EQUAL, yytext); }
+">="                        { REPLACE(TokenType::GREATER_EQUAL, yytext); }
+"<"                         { REPLACE(TokenType::LESS, yytext); }
+">"                         { REPLACE(TokenType::GREATER, yytext); }
+"=="                        { REPLACE(TokenType::EQUAL_EQUAL, yytext); }
+"="                         { REPLACE(TokenType::EQUAL, yytext); }
+
+"class"                     { REPLACE(TokenType::CLASS, yytext); }
+"super"                     { REPLACE(TokenType::SUPER, yytext); }
+"this"                      { REPLACE(TokenType::THIS, yytext); }
+
+"fun"                       { REPLACE(TokenType::FUN, yytext); }
+"return"                    { REPLACE(TokenType::RETURN, yytext); }
+
+"if"                        { REPLACE(TokenType::IF, yytext); }
+"else"                      { REPLACE(TokenType::ELSE, yytext); }
+"for"                       { REPLACE(TokenType::FOR, yytext); }
+"while"                     { REPLACE(TokenType::WHILE, yytext); }
+
+"and"                       { REPLACE(TokenType::AND, yytext); }
+"or"                        { REPLACE(TokenType::OR, yytext); }
+
+"false"                     { REPLACE(TokenType::FALSE, yytext); }
+"true"                      { REPLACE(TokenType::TRUE, yytext); }
+
+"let"                       { REPLACE(TokenType::LET, yytext); }
 
 [ \t]+                      { current_col += yyleng; } // skip whitespace
-";"                         { REPLACE(TokenType::SEMICOLON, yytext, yytext, current_line, yyleng); }
+";"                         { REPLACE(TokenType::SEMICOLON, yytext); }
+(\r\n|\r|\n)                { current_line++; current_col = 1; }
 
-\r\n                        { current_line++; current_col = 1; }
-\r                          { current_line++; current_col = 1; }
-\n                          { current_line++; current_col = 1; }
+{NUMBER}                    { REPLACE(TokenType::NUMBER, yytext); }
+{ID}                        { REPLACE(TokenType::IDENTIFIER, yytext); }
+{STRING}                    { REPLACE(TokenType::STRING, std::string_view(yytext + 1, yyleng - 2)); }
 
-"<="                        { REPLACE(TokenType::LESS_EQUAL, yytext, yytext, current_line, yyleng); }
-">="                        { REPLACE(TokenType::GREATER_EQUAL, yytext, yytext, current_line, yyleng); }
-"<"                         { REPLACE(TokenType::LESS, yytext, yytext, current_line, yyleng); }
-">"                         { REPLACE(TokenType::GREATER, yytext, yytext, current_line, yyleng); }
-"=="                        { REPLACE(TokenType::EQUAL_EQUAL, yytext, yytext, current_line, yyleng); }
-"="                         { REPLACE(TokenType::EQUAL, yytext, yytext, current_line, yyleng); }
+<<EOF>>                     { REPLACE(TokenType::T_EOF, yytext); }
 
-({DIGIT}+\.?{DIGIT}*|{DIGIT}*\.{DIGIT}+) { REPLACE(TokenType::NUMBER, yytext, yytext, current_line, yyleng); }
-{ID}                        { REPLACE(TokenType::IDENTIFIER, yytext, yytext, current_line, yyleng); }
-\"(.)+\"                    { REPLACE(TokenType::STRING, yytext, std::string_view(yytext + 1, yyleng - 2), current_line, yyleng); }
-
-<<EOF>>                     { REPLACE(TokenType::T_EOF, yytext, yytext, current_line, yyleng); }
-
-.                           { REPLACE(TokenType::ERROR, yytext, yytext, current_line, yyleng); };
+.                           { REPLACE(TokenType::ERROR, yytext); };
 
 %%
