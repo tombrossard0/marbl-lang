@@ -29,17 +29,22 @@ ID          {LETTER}({LETTER}|{DIGIT})*
 "let"                       { REPLACE(TokenType::LET, yytext, yytext, current_line, yyleng); }
 
 [ \t]+                      { current_col += yyleng; } // skip whitespace
-;                           { REPLACE(TokenType::SEMICOLON, yytext, yytext, current_line, yyleng); }
+";"                         { REPLACE(TokenType::SEMICOLON, yytext, yytext, current_line, yyleng); }
 
 \r\n                        { current_line++; current_col = 1; }
 \r                          { current_line++; current_col = 1; }
 \n                          { current_line++; current_col = 1; }
 
-=                           { REPLACE(TokenType::EQUAL, yytext, yytext, current_line, yyleng); }
+"<="                        { REPLACE(TokenType::LESS_EQUAL, yytext, yytext, current_line, yyleng); }
+">="                        { REPLACE(TokenType::GREATER_EQUAL, yytext, yytext, current_line, yyleng); }
+"<"                         { REPLACE(TokenType::LESS, yytext, yytext, current_line, yyleng); }
+">"                         { REPLACE(TokenType::GREATER, yytext, yytext, current_line, yyleng); }
+"=="                        { REPLACE(TokenType::EQUAL_EQUAL, yytext, yytext, current_line, yyleng); }
+"="                         { REPLACE(TokenType::EQUAL, yytext, yytext, current_line, yyleng); }
 
-{DIGIT}+                    { REPLACE(TokenType::NUMBER, yytext, yytext, current_line, yyleng); }
+{DIGIT}+\.?{DIGIT}*                    { REPLACE(TokenType::NUMBER, yytext, yytext, current_line, yyleng); }
 {ID}                        { REPLACE(TokenType::IDENTIFIER, yytext, yytext, current_line, yyleng); }
-\"({LETTER}|{DIGIT})+\"     { REPLACE(TokenType::STRING, yytext, std::string_view(yytext + 1, yyleng - 2), current_line, yyleng); }
+\"(.)+\"                    { REPLACE(TokenType::STRING, yytext, std::string_view(yytext + 1, yyleng - 2), current_line, yyleng); }
 
 <<EOF>>                     { REPLACE(TokenType::T_EOF, yytext, yytext, current_line, yyleng); }
 
