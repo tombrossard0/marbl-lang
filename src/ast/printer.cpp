@@ -25,18 +25,7 @@ void AstPrinter::visitGroupingExpr(Grouping &expr) {
 }
 
 void AstPrinter::visitLiteralExpr(Literal &expr) {
-    std::visit(
-        [](auto &&val) {
-            using T = std::decay_t<decltype(val)>;
-            if constexpr (std::is_same_v<T, std::string>) {
-                std::cout << "\"" << val << "\"";
-            } else if constexpr (std::is_same_v<T, bool>) {
-                std::cout << (val ? "true" : "false");
-            } else {
-                std::cout << val;
-            }
-        },
-        expr.value);
+    std::cout << expr.value;
 }
 
 void AstPrinter::visitUnaryExpr(Unary &expr) {
