@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "interpreter.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "printer.hpp"
@@ -27,6 +28,9 @@ int Marbl::runFile(char *filepath) {
 
     AstPrinter printer{};
     printer.print(*expression);
+
+    Interpreter interpreter{};
+    interpreter.interpret(*expression);
 
     inputFile.close();
 

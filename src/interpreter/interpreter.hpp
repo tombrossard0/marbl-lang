@@ -2,7 +2,13 @@
 
 #include "ast.hpp"
 
-class interpreter : public Visitor<Object> {
+class Interpreter : public Visitor<Object> {
+  public:
+    void interpret(Expr &expr);
+
+  private:
+    Object evaluate(Expr &expr);
+
     Object visitBinaryExpr(Binary &expr) override;
     Object visitGroupingExpr(Grouping &expr) override;
     Object visitLiteralExpr(Literal &expr) override;
