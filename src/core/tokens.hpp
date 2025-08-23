@@ -6,7 +6,19 @@
 using Object = std::variant<int, double, std::string, bool>;
 
 inline std::ostream &operator<<(std::ostream &os, const Object &obj) {
-    std::visit([&os](auto &&value) { os << value; }, obj);
+    std::visit(
+        [&os](auto &&val) {
+            using T = std::decay_t<decltype(val)>;
+            if constexpr (std::is_same_v<T, std::string>) {
+                os << "\"" << val << "\"";
+            } else if constexpr (std::is_same_v<T, bool>) {
+                os << (val ? "true" : "false");
+            } else {
+                os << val;
+            }
+        },
+        obj);
+
     return os;
 }
 

@@ -73,8 +73,8 @@ STRING      \"(.)+\"
 "and"                       { REPLACE(TokenType::AND, yytext); }
 "or"                        { REPLACE(TokenType::OR, yytext); }
 
-"false"                     { REPLACE(TokenType::FALSE, yytext); }
-"true"                      { REPLACE(TokenType::TRUE, yytext); }
+"false"                     { REPLACE(TokenType::FALSE, false); }
+"true"                      { REPLACE(TokenType::TRUE, true); }
 
 "let"                       { REPLACE(TokenType::LET, yytext); }
 

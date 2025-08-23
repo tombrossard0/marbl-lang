@@ -12,7 +12,7 @@ void AstPrinter::visitBinaryExpr(Binary &expr) {
     expr.left->accept(*this);
     std::cout << " ";
 
-    std::cout << expr.op.literal << " ";
+    std::cout << expr.op.lexeme << " ";
 
     expr.right->accept(*this);
     std::cout << " )";
@@ -29,7 +29,7 @@ void AstPrinter::visitLiteralExpr(Literal &expr) {
 }
 
 void AstPrinter::visitUnaryExpr(Unary &expr) {
-    std::cout << "( " << expr.op.literal << " ";
+    std::cout << "( " << expr.op.lexeme << " ";
     expr.right->accept(*this);
     std::cout << " )";
 }
