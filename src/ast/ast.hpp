@@ -45,7 +45,7 @@ class Expr {
   public:
     virtual ~Expr() = default;
     virtual void accept(Visitor<void> &visitor) = 0;
-    virtual std::string accept(Visitor<std::string> &visitor) = 0;
+    virtual Object accept(Visitor<Object> &visitor) = 0;
 };
 
 // ======= AST Subclass Macro =======
@@ -58,7 +58,7 @@ class Expr {
         void accept(Visitor<void> &visitor) override {                                                       \
             visitor.visit##name##Expr(*this);                                                                \
         }                                                                                                    \
-        std::string accept(Visitor<std::string> &visitor) override {                                         \
+        Object accept(Visitor<Object> &visitor) override {                                                   \
             return visitor.visit##name##Expr(*this);                                                         \
         }                                                                                                    \
     };
