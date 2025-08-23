@@ -7,6 +7,30 @@
 #include "lexer.hpp"
 #include <iostream>
 
+std::string unescape(const std::string& str) {
+    std::string result;
+    result.reserve(str.size());
+
+    for (size_t i = 0; i < str.size(); ++i) {
+        if (str[i] == '\\' && i + 1 < str.size()) {
+            char next = str[i + 1];
+            switch (next) {
+                case 'n': result.push_back('\n'); break;
+                case 't': result.push_back('\t'); break;
+                case 'r': result.push_back('\r'); break;
+                case '"': result.push_back('"'); break;
+                case '\\': result.push_back('\\'); break;
+                default: result.push_back(next); break;
+            }
+            ++i; // skip the escaped char
+        } else {
+            result.push_back(str[i]);
+        }
+    }
+
+    return result;
+}
+
 #define REPLACE(TYPE, LITERAL)\
     Lexer::currentToken.type = TYPE;\
     Lexer::currentToken.lexeme = yytext;\
@@ -25,7 +49,7 @@ LETTER      [a-zA-Z]
 ID          {LETTER}({LETTER}|{DIGIT})*
 
 NUMBER      ({DIGIT}+\.?{DIGIT}*|{DIGIT}*\.{DIGIT}+)
-STRING      \"(.)+\"
+STRING      \"([^"]|\\.)+\"
 
 %%
 
@@ -91,7 +115,7 @@ STRING      \"(.)+\"
                                 }
                             }
 {ID}                        { REPLACE(TokenType::IDENTIFIER, yytext); }
-{STRING}                    { REPLACE(TokenType::STRING, std::string(yytext + 1, yyleng - 2)); }
+{STRING}                    { REPLACE(TokenType::STRING, unescape(std::string(yytext + 1, yyleng - 2))); }
 
 <<EOF>>                     { REPLACE(TokenType::T_EOF, yytext); }
 

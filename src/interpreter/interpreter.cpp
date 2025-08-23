@@ -14,6 +14,7 @@ Object Interpreter::evaluate(Expr &expr) {
 }
 
 Object Interpreter::visitLiteralExpr(Literal &expr) {
+    std::cout << "test literal: " << expr.value << std::endl;
     return expr.value;
 }
 
@@ -174,7 +175,7 @@ Object Interpreter::visitGroupingExpr(Grouping &expr) {
 }
 
 Object Interpreter::visitUnaryExpr(Unary &expr) {
-    Object right = evaluate(expr);
+    Object right = evaluate(*expr.right);
 
     switch (expr.op.type) {
     case BANG:
