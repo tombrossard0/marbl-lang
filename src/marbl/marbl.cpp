@@ -3,6 +3,8 @@
 #include <vector>
 
 #include "lexer.hpp"
+#include "parser.hpp"
+#include "printer.hpp"
 #include "tokens.hpp"
 
 int Marbl::runFile(char *filepath) {
@@ -13,12 +15,18 @@ int Marbl::runFile(char *filepath) {
         return EX_NOINPUT;
     }
 
-    Lexer lexer(inputFile);
+    // Lexer lexer(inputFile);
 
-    int currentType;
-    while ((currentType = lexer.nextToken()) != TokenType::T_EOF) {
-        std::cout << lexer.currentToken << std::endl;
-    }
+    // int currentType;
+    // while ((currentType = lexer.nextToken()) != TokenType::T_EOF) {
+    //     std::cout << lexer.currentToken << std::endl;
+    // }
+
+    Parser parser{inputFile};
+    UniqueExpr expression = parser.parse();
+
+    AstPrinter printer{};
+    printer.print(*expression);
 
     inputFile.close();
 

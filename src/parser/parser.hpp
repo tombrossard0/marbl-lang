@@ -1,0 +1,170 @@
+#pragma once
+
+#include <cstdarg>
+#include <lexer.hpp>
+#include <memory>
+
+#include "ast.hpp"
+#include "parser_exception.hpp"
+#include "tokens.hpp"
+
+class Parser {
+  public:
+    Lexer lexer;
+
+    Parser(std::istream &input) : lexer(input) { advance(); }
+
+    UniqueExpr parse() {
+        try {
+            return expression();
+        } catch (ParserException err) { return nullptr; }
+    }
+
+  private:
+    Token previousToken;
+
+    Token peek() { return lexer.currentToken; }
+
+    bool isAtEnd() { return peek().type == TokenType::T_EOF; }
+
+    Token advance() {
+        // Consumes the current token and returns it
+        previousToken = lexer.currentToken;
+        if (!isAtEnd()) lexer.nextToken();
+        return previousToken;
+    }
+
+    bool check(TokenType type) {
+        if (isAtEnd()) return false;
+        return peek().type == type;
+    }
+
+    template <typename... Types> bool match(Types... types) {
+        for (TokenType t : {types...}) {
+            if (check(t)) {
+                advance();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void synchronize() {
+        advance();
+
+        while (!isAtEnd()) {
+            if (previousToken.type == SEMICOLON) return;
+
+            switch (peek().type) {
+            case CLASS | FUN | LET | FOR | IF | WHILE | PRINT | RETURN:
+                return;
+            default:
+                break;
+            }
+
+            advance();
+        }
+    }
+
+    Token consume(TokenType type, std::string msg) {
+        if (check(type)) return advance();
+        throw ParserException(peek(), msg);
+    }
+
+    UniqueExpr primary() {
+        // primary        ::= "true" | "false" | "this"
+        //                |   NUMBER | STRING | IDENTIFIER | "(" expression ")"
+        //                |   "super" "." IDENTIFIER ; // TODO
+
+        if (match(TRUE)) return std::make_unique<Literal>(true);
+        if (match(FALSE)) return std::make_unique<Literal>(false);
+        // if (match(THIS)) return std::make_unique<Literal>(THIS); // TODO
+
+        if (match(NUMBER, STRING, IDENTIFIER)) return std::make_unique<Literal>(previousToken.literal);
+
+        if (match(LEFT_PAREN)) {
+            UniqueExpr expr = expression();
+            consume(RIGHT_PAREN, "Except ')' after expression.");
+            return std::make_unique<Grouping>(std::move(expr));
+        }
+
+        throw ParserException(peek(), "Expect expression.");
+    }
+
+    UniqueExpr call() {
+        // call           ::= primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
+        UniqueExpr expr = primary();
+
+        return expr;
+    }
+
+    UniqueExpr unary() {
+        // unary          ::= ( "!" | "-" ) unary | call ;
+        if (match(BANG, MINUS)) {
+            Token op = previousToken;
+            UniqueExpr right = unary();
+            return std::make_unique<Unary>(op, std::move(right));
+        }
+
+        return call();
+    }
+
+    UniqueExpr factor() {
+        // factor         ::= unary ( ( "/" | "*" ) unary )* ;
+        UniqueExpr expr = unary();
+
+        while (match(SLASH, STAR)) {
+            Token op = previousToken;
+
+            UniqueExpr right = unary();
+            expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
+        }
+
+        return expr;
+    }
+
+    UniqueExpr term() {
+        // term           ::= factor ( ( "-" | "+" ) factor )* ;
+        UniqueExpr expr = factor();
+
+        while (match(MINUS, PLUS)) {
+            Token op = previousToken;
+
+            UniqueExpr right = factor();
+            expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
+        }
+
+        return expr;
+    }
+
+    UniqueExpr comparison() {
+        // comparison     ::= term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+        UniqueExpr expr = term();
+
+        while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+            Token op = previousToken;
+
+            UniqueExpr right = term();
+            expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
+        }
+
+        return expr;
+    }
+
+    UniqueExpr equality() {
+        // equality       ::= comparison ( ( "!=" | "==" ) comparison )* ;
+        UniqueExpr expr = comparison();
+
+        while (match(BANG_EQUAL, EQUAL_EQUAL)) {
+            Token op = previousToken;
+
+            UniqueExpr right = comparison();
+            expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
+        }
+
+        return expr;
+    }
+
+    UniqueExpr expression() { return equality(); }
+};
