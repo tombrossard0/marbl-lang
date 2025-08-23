@@ -8,10 +8,11 @@ void AstPrinter::print(Expr &expr) {
 
 void AstPrinter::visitBinaryExpr(Binary &expr) {
     std::cout << "( ";
-    std::cout << expr.op.literal << " ";
 
     expr.left->accept(*this);
     std::cout << " ";
+
+    std::cout << expr.op.literal << " ";
 
     expr.right->accept(*this);
     std::cout << " )";
