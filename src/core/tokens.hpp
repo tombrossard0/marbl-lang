@@ -1,6 +1,14 @@
 #pragma once
 
 #include <iostream>
+#include <variant>
+
+using Object = std::variant<int, double, std::string, bool>;
+
+inline std::ostream &operator<<(std::ostream &os, const Object &obj) {
+    std::visit([&os](auto &&value) { os << value; }, obj);
+    return os;
+}
 
 enum TokenType {
     ERROR = -1,
@@ -178,12 +186,12 @@ class Token {
   public:
     TokenType type;
     std::string lexeme;
-    std::string literal;
+    Object literal;
     int line;
     int col;
 
     Token() : type(TokenType::T_SOF), lexeme("T_SOF"), literal("T_SOF"), line(0) {}
-    Token(TokenType type, std::string lexeme, std::string literal, int line, int col)
+    Token(TokenType type, std::string lexeme, Object literal, int line, int col)
         : type(type), lexeme(lexeme), literal(literal), line(line), col(col) {}
     ~Token() {};
 

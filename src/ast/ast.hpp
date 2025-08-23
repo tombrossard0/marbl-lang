@@ -3,10 +3,8 @@
 #include "tokens.hpp"
 #include <memory>
 #include <string>
-#include <variant>
 
 // ======= Utility Types =======
-using Object = std::variant<int, double, std::string, bool>;
 using UniqueExpr = std::unique_ptr<class Expr>;
 
 // ======= AST Node Field Macros =======

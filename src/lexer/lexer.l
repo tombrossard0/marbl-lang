@@ -82,9 +82,16 @@ STRING      \"(.)+\"
 ";"                         { REPLACE(TokenType::SEMICOLON, yytext); }
 (\r\n|\r|\n)                { current_line++; current_col = 1; }
 
-{NUMBER}                    { REPLACE(TokenType::NUMBER, yytext); }
+{NUMBER}                    {
+                                std::string numStr(yytext);
+                                if (numStr.find('.') != std::string::npos){
+                                    REPLACE(TokenType::NUMBER, std::stod(numStr));
+                                } else {
+                                    REPLACE(TokenType::NUMBER, std::stoi(numStr));
+                                }
+                            }
 {ID}                        { REPLACE(TokenType::IDENTIFIER, yytext); }
-{STRING}                    { REPLACE(TokenType::STRING, std::string_view(yytext + 1, yyleng - 2)); }
+{STRING}                    { REPLACE(TokenType::STRING, std::string(yytext + 1, yyleng - 2)); }
 
 <<EOF>>                     { REPLACE(TokenType::T_EOF, yytext); }
 
