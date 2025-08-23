@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "ast.hpp"
 #include "marbl.hpp"
 
 // We follow the conventions defined in UNIX "sysexits.h" header for exit codes:
