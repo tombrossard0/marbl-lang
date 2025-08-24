@@ -8,6 +8,7 @@
 
 // ======= Utility Types =======
 using UniqueExpr = std::unique_ptr<class Expr>;
+using UniqueStmt = std::unique_ptr<class Stmt>;
 
 // ======= AST Node Field Macros =======
 #define FIELD_MEMBER(type, name) type name;
@@ -30,6 +31,7 @@ class Print;
 #define GROUPING_FIELDS(X, Y) Y(UniqueExpr, expression)
 #define LITERAL_FIELDS(X, Y) Y(Object, value)
 #define UNARY_FIELDS(X, Y) X(Token, op) Y(UniqueExpr, right)
+
 #define EXPRESSION_FIELDS(X, Y) Y(UniqueExpr, expression)
 #define PRINT_FIELDS(X, Y) Y(UniqueExpr, expression)
 
@@ -44,11 +46,15 @@ class Print;
     X(Print, PRINT_FIELDS, Stmt)
 
 // ======= Visitor Template =======
-template <typename T> class Visitor {
+template <typename T> class ExprVisitor {
   public:
 #define VISIT_METHOD(name, FIELDS, basename) virtual T visit##name##Expr(name &expr) = 0;
     EXPR_AST_NODES(VISIT_METHOD)
 #undef VISIT_METHOD
+};
+
+template <typename T> class StmtVisitor {
+  public:
 #define VISIT_METHOD(name, FIELDS, basename) virtual T visit##name##Stmt(name &stmt) = 0;
     STMT_AST_NODES(VISIT_METHOD)
 #undef VISIT_METHOD
@@ -58,17 +64,17 @@ template <typename T> class Visitor {
 class Expr {
   public:
     virtual ~Expr() = default;
-    virtual void accept(Visitor<void> &visitor) = 0;
-    virtual Object accept(Visitor<Object> &visitor) = 0;
-    virtual llvm::Value *accept(Visitor<llvm::Value *> &visitor) = 0;
+    virtual void accept(ExprVisitor<void> &visitor) = 0;
+    virtual Object accept(ExprVisitor<Object> &visitor) = 0;
+    virtual llvm::Value *accept(ExprVisitor<llvm::Value *> &visitor) = 0;
 };
 
 class Stmt {
   public:
     virtual ~Stmt() = default;
-    virtual void accept(Visitor<void> &visitor) = 0;
-    virtual Object accept(Visitor<Object> &visitor) = 0;
-    virtual llvm::Value *accept(Visitor<llvm::Value *> &visitor) = 0;
+    virtual void accept(StmtVisitor<void> &visitor) = 0;
+    virtual Object accept(StmtVisitor<Object> &visitor) = 0;
+    virtual llvm::Value *accept(StmtVisitor<llvm::Value *> &visitor) = 0;
 };
 
 // ======= AST Subclass Macro =======
@@ -78,13 +84,13 @@ class Stmt {
         FIELDS(FIELD_MEMBER, FIELD_MEMBER)                                                                   \
         name(FIELDS(FIELD_PARAMS, FIELD_PARAMS_END)) : FIELDS(FIELD_INIT, FIELD_INIT_END) {                  \
         }                                                                                                    \
-        void accept(Visitor<void> &visitor) override {                                                       \
+        void accept(basename##Visitor<void> &visitor) override {                                             \
             visitor.visit##name##basename(*this);                                                            \
         }                                                                                                    \
-        Object accept(Visitor<Object> &visitor) override {                                                   \
+        Object accept(basename##Visitor<Object> &visitor) override {                                         \
             return visitor.visit##name##basename(*this);                                                     \
         }                                                                                                    \
-        llvm::Value *accept(Visitor<llvm::Value *> &visitor) override {                                      \
+        llvm::Value *accept(basename##Visitor<llvm::Value *> &visitor) override {                            \
             return visitor.visit##name##basename(*this);                                                     \
         }                                                                                                    \
     };

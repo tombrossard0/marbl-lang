@@ -17,37 +17,18 @@
 #include "llvm/TargetParser/Host.h"
 #include <llvm/IR/LegacyPassManager.h>
 
-// We follow the conventions defined in UNIX "sysexits.h" header for exit codes:
-// (https://man.freebsd.org/cgi/man.cgi?query=sysexits&apropos=0&sektion=0&manpath=FreeBSD+4.3-RELEASE&format=html).
-int main(int argc, char **argv) {
-    // if (argc > 2) {
-    //     std::cerr << "Usage: marbl [script]" << std::endl;
-    //     return EX_USAGE;
-    // }
+int compile(std::vector<UniqueStmt> &statements) {
+    for (auto &statement : statements) {
+        AstPrinter printer{};
+        printer.print(*statement);
 
-    // if (argc == 2) { return Marbl::runFile(argv[1]); }
-
-    // return Marbl::runPrompt();
-
-    std::ifstream inputFile(argv[1]);
-
-    if (!inputFile) {
-        std::cerr << "Cannot open input file!" << std::endl;
-        return EX_NOINPUT;
+        // Interpreter interpreter{};
+        // interpreter.interpret(*statement);
     }
-
-    Parser parser{inputFile};
-
-    UniqueExpr expr = parser.parse();
-
-    AstPrinter printer{};
-    printer.print(*expr);
-
-    inputFile.close();
 
     // Generate IR
     CodeGenVisitor codegen("marbl");
-    codegen.generate(*expr);
+    codegen.generate(statements);
 
     // Print IR to stdout
     std::cout << "Generated LLVM IR:\n";
@@ -94,6 +75,32 @@ int main(int argc, char **argv) {
     dest.flush();
 
     std::cout << "Object file 'build/output.o' generated successfully!\n";
-
     return 0;
+}
+
+// We follow the conventions defined in UNIX "sysexits.h" header for exit codes:
+// (https://man.freebsd.org/cgi/man.cgi?query=sysexits&apropos=0&sektion=0&manpath=FreeBSD+4.3-RELEASE&format=html).
+int main(int argc, char **argv) {
+    // if (argc > 2) {
+    //     std::cerr << "Usage: marbl [script]" << std::endl;
+    //     return EX_USAGE;
+    // }
+
+    // if (argc == 2) { return Marbl::runFile(argv[1]); }
+
+    // return Marbl::runPrompt();
+
+    std::ifstream inputFile(argv[1]);
+
+    if (!inputFile) {
+        std::cerr << "Cannot open input file!" << std::endl;
+        return EX_NOINPUT;
+    }
+
+    Parser parser{inputFile};
+    std::vector<UniqueStmt> statements = parser.parse();
+
+    inputFile.close();
+
+    return compile(statements);
 }

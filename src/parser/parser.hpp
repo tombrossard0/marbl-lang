@@ -14,10 +14,11 @@ class Parser {
 
     Parser(std::istream &input) : lexer(input) {}
 
-    UniqueExpr parse() {
-        try {
-            return expression();
-        } catch (ParserException err) { return nullptr; }
+    std::vector<UniqueStmt> parse() {
+        std::vector<UniqueStmt> statements;
+        while (!isAtEnd()) { statements.push_back(statement()); }
+
+        return statements;
     }
 
     bool isAtEnd() { return peek().type == TokenType::T_EOF; }
@@ -172,5 +173,22 @@ class Parser {
     UniqueExpr expression() {
         UniqueExpr expr = equality();
         return expr;
+    }
+
+    UniqueStmt printStatement() {
+        UniqueExpr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return std::make_unique<Print>(std::move(value));
+    }
+
+    UniqueStmt expressionStatement() {
+        UniqueExpr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return std::make_unique<Expression>(std::move(value));
+    }
+
+    UniqueStmt statement() {
+        if (match(PRINT)) return printStatement();
+        return expressionStatement();
     }
 };

@@ -61,20 +61,11 @@ llvm::Value *CodeGenVisitor::visitGroupingExpr(Grouping &expr) {
     return expr.expression->accept(*this);
 }
 
-llvm::Value *CodeGenVisitor::visitExpressionStmt(Expression &stmt) {
+void CodeGenVisitor::visitExpressionStmt(Expression &stmt) {
 }
 
-llvm::Value *CodeGenVisitor::visitPrintStmt(Print &stmt) {
-}
-
-// === Entry point: wraps expression in function main ===
-void CodeGenVisitor::generate(Expr &expr) {
-    auto *funcType = llvm::FunctionType::get(builder.getInt32Ty(), false);
-    auto *function = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, "main", module);
-    auto *bb = llvm::BasicBlock::Create(context, "entry", function);
-    builder.SetInsertPoint(bb);
-
-    auto *res = expr.accept(*this);
+void CodeGenVisitor::visitPrintStmt(Print &stmt) {
+    auto *res = stmt.expression->accept(*this);
 
     llvm::Value *formatStr = nullptr;
     if (res->getType()->isIntegerTy(32))
@@ -91,6 +82,16 @@ void CodeGenVisitor::generate(Expr &expr) {
         llvm::FunctionType::get(builder.getInt32Ty(), llvm::PointerType::get(builder.getInt8Ty(), 0), true);
     llvm::FunctionCallee printfFunc = module.getOrInsertFunction("printf", printfType);
     builder.CreateCall(printfFunc, {formatStr, res});
+}
+
+// === Entry point: wraps expression in function main ===
+void CodeGenVisitor::generate(std::vector<UniqueStmt> &statements) {
+    auto *funcType = llvm::FunctionType::get(builder.getInt32Ty(), false);
+    auto *function = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, "main", module);
+    auto *bb = llvm::BasicBlock::Create(context, "entry", function);
+    builder.SetInsertPoint(bb);
+
+    for (auto &statement : statements) { statement->accept(*this); }
 
     builder.CreateRet(llvm::ConstantInt::get(context, llvm::APInt(32, 0)));
 }

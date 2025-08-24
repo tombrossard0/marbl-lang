@@ -1,8 +1,8 @@
 #include "printer.hpp"
 
-void AstPrinter::print(Expr &expr) {
-    std::cout << "expression: ";
-    expr.accept(*this);
+void AstPrinter::print(Stmt &stmt) {
+    std::cout << "stmt: ";
+    stmt.accept(*this);
     std::cout << std::endl;
 }
 
@@ -35,7 +35,12 @@ void AstPrinter::visitUnaryExpr(Unary &expr) {
 }
 
 void AstPrinter::visitExpressionStmt(Expression &stmt) {
+    stmt.expression->accept(*this);
+    std::cout << ";";
 }
 
 void AstPrinter::visitPrintStmt(Print &stmt) {
+    std::cout << "print(";
+    stmt.expression->accept(*this);
+    std::cout << ")";
 }

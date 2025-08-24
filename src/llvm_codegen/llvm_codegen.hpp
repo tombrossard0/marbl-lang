@@ -6,7 +6,7 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 
-class CodeGenVisitor : public Visitor<llvm::Value *> {
+class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
     llvm::LLVMContext context;
     llvm::Module module;
     llvm::IRBuilder<> builder;
@@ -37,13 +37,13 @@ class CodeGenVisitor : public Visitor<llvm::Value *> {
     }
 
     llvm::Module &getModule() { return module; }
-    void generate(Expr &expr);
+    void generate(std::vector<UniqueStmt> &statements);
 
     llvm::Value *visitLiteralExpr(Literal &expr) override;
     llvm::Value *visitBinaryExpr(Binary &expr) override;
     llvm::Value *visitUnaryExpr(Unary &expr) override;
     llvm::Value *visitGroupingExpr(Grouping &expr) override;
 
-    llvm::Value *visitExpressionStmt(Expression &stmt) override;
-    llvm::Value *visitPrintStmt(Print &stmt) override;
+    void visitExpressionStmt(Expression &stmt) override;
+    void visitPrintStmt(Print &stmt) override;
 };

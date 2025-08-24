@@ -1,5 +1,6 @@
 #!/bin/sh
 # rm -rf build
+rm build/output.o build/program.out
 ./build.sh
 
 ./build/marbl_app examples/hello.mrbl

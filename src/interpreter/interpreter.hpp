@@ -2,7 +2,7 @@
 
 #include "ast.hpp"
 
-class Interpreter : public Visitor<Object> {
+class Interpreter : public ExprVisitor<Object>, StmtVisitor<void> {
   public:
     void interpret(Expr &expr);
 
@@ -14,6 +14,6 @@ class Interpreter : public Visitor<Object> {
     Object visitLiteralExpr(Literal &expr) override;
     Object visitUnaryExpr(Unary &expr) override;
 
-    Object visitExpressionStmt(Expression &stmt) override;
-    Object visitPrintStmt(Print &stmt) override;
+    void visitExpressionStmt(Expression &stmt) override;
+    void visitPrintStmt(Print &stmt) override;
 };

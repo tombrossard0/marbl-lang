@@ -2,9 +2,9 @@
 
 #include "ast.hpp"
 
-class AstPrinter : public Visitor<void> {
+class AstPrinter : public ExprVisitor<void>, StmtVisitor<void> {
   public:
-    void print(Expr &expr);
+    void print(Stmt &expr);
 
   private:
     void visitBinaryExpr(Binary &expr) override;

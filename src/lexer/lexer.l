@@ -53,6 +53,8 @@ STRING      \"([^"]|\\.)+\"
 
 %%
 
+print                       { REPLACE(TokenType::PRINT, yytext); }
+
 "("                         { REPLACE(TokenType::LEFT_PAREN, yytext); }
 ")"                         { REPLACE(TokenType::RIGHT_PAREN, yytext); }
 
