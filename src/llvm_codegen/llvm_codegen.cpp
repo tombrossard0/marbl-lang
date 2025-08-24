@@ -1,22 +1,5 @@
 #include "llvm_codegen.hpp"
 
-// llvm::Value *CodeGenVisitor::valueFromId(std::string id) {
-//     return std::visit(
-//         [&](auto &&val) -> llvm::Value * {
-//             using T = std::decay_t<decltype(val)>;
-//             if constexpr (std::is_same_v<T, int>)
-//                 return llvm::ConstantInt::get(context, llvm::APInt(32, val));
-//             else if constexpr (std::is_same_v<T, double>)
-//                 return llvm::ConstantFP::get(context, llvm::APFloat(val));
-//             else if constexpr (std::is_same_v<T, bool>)
-//                 return llvm::ConstantInt::get(context, llvm::APInt(1, val));
-//             else if constexpr (std::is_same_v<T, std::string>)
-//                 return builder.CreateGlobalStringPtr(val);
-//             else { throw std::runtime_error("Type not yet supported in codegen"); }
-//         },
-//         Identifier::variables[id]);
-// }
-
 llvm::Value *CodeGenVisitor::visitLiteralExpr(Literal &expr) {
     return std::visit(
         [&](auto &&val) -> llvm::Value * {
@@ -31,7 +14,9 @@ llvm::Value *CodeGenVisitor::visitLiteralExpr(Literal &expr) {
                 return builder.CreateGlobalStringPtr(val);
             else if constexpr (std::is_same_v<T, struct Identifier>) {
                 // return valueFromId(val.id);
-                return Identifier::variables[val.id];
+                llvm::Value *value = Identifier::variables[val.id];
+                if (!value) { throw std::runtime_error("Undefined variable: " + val.id); }
+                return value;
             } else {
                 throw std::runtime_error("Type not yet supported in codegen");
             }
@@ -85,6 +70,7 @@ llvm::Value *CodeGenVisitor::visitGroupingExpr(Grouping &expr) {
 
 llvm::Value *CodeGenVisitor::visitVariableExpr(Variable &expr) {
     llvm::Value *alloca = Identifier::variables[expr.name.lexeme];
+    if (!alloca) { throw std::runtime_error("Undefined variable: " + expr.name.lexeme); }
     auto *ptrTy = llvm::cast<llvm::AllocaInst>(alloca)->getAllocatedType();
     return builder.CreateLoad(ptrTy, alloca, expr.name.lexeme);
 }

@@ -1,8 +1,10 @@
+print(hello);
+
 let hello = "hello world!!!!!!!";
 hello = "hello world2";
 
-let x = 234;
-x = 1092;
+let x = 234.2;
+x = 1092.67;
 
 print x;
 print hello;
