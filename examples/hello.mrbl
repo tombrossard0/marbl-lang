@@ -1,10 +1,18 @@
-print(hello);
-
 let hello = "hello world!!!!!!!";
+print hello;
+
 hello = "hello world2";
 
 let x = 234.2;
 x = 1092.67;
 
+let x = "ABCDEF";
+
 print x;
 print hello;
+
+let z = x = "xxxxx";
+print z;
+print x;
+
+print x = 3;

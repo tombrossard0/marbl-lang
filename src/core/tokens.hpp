@@ -13,7 +13,6 @@ struct Identifier;
 using Object = std::variant<int, double, std::string, bool, struct Identifier>;
 
 struct Identifier {
-    inline static std::unordered_map<std::string, llvm::Value *> variables = {};
     std::string id;
 };
 

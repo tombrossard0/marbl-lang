@@ -7,6 +7,11 @@
 #include "llvm/IR/Module.h"
 
 class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
+    class Environment {
+      public:
+        inline static std::unordered_map<std::string, llvm::Value *> variables = {};
+    };
+
     llvm::LLVMContext context;
     llvm::Module module;
     llvm::IRBuilder<> builder;
