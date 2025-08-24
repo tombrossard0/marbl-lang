@@ -3,6 +3,8 @@
 #include "ast.hpp"
 #include "llvm_codegen.hpp"
 #include "marbl.hpp"
+#include "parser.hpp"
+#include "printer.hpp"
 
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
@@ -27,11 +29,27 @@ int main(int argc, char **argv) {
 
     // return Marbl::runPrompt();
 
+    std::ifstream inputFile(argv[1]);
+
+    if (!inputFile) {
+        std::cerr << "Cannot open input file!" << std::endl;
+        return EX_NOINPUT;
+    }
+
+    Parser parser{inputFile};
+
+    UniqueExpr expr = parser.parse();
+
+    AstPrinter printer{};
+    printer.print(*expr);
+
+    inputFile.close();
+
     // Example: (10 + 20) * 2
-    auto expr = std::make_unique<Binary>(
-        std::make_unique<Binary>(std::make_unique<Literal>(10), Token{TokenType::PLUS, "+", "+", 1, 1},
-                                 std::make_unique<Literal>(20)),
-        Token{TokenType::STAR, "*", "*", 1, 1}, std::make_unique<Literal>(2));
+    // auto expr = std::make_unique<Binary>(
+    //     std::make_unique<Binary>(std::make_unique<Literal>(10), Token{TokenType::PLUS, "+", "+", 1, 1},
+    //                              std::make_unique<Literal>(20)),
+    //     Token{TokenType::STAR, "*", "*", 1, 1}, std::make_unique<Literal>(2));
 
     // Generate IR
     CodeGenVisitor codegen("marbl");
