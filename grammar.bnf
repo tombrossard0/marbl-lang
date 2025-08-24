@@ -7,13 +7,13 @@ program         ::= declaration* EOF ;
 
 declaration     ::= classDecl
                 |   funDecl
-                |   varDecl
+                |   letDecl
                 |   statement ;
 
 classDecl       ::= "class" IDENTIFIER ( "<" IDENTIFIER )?
                     "{" function* "}" ;
 funDecl         ::= "fun" function ;
-varDecl         ::= "let" IDENTIFIER ":" IDENTIFIER ( "=" expression )? ";" ;
+letDecl         ::= "let" IDENTIFIER ":" IDENTIFIER ( "=" expression )? ";" ;
 
 
 # === Statements ===
@@ -27,7 +27,7 @@ statement       ::= exprStmt
                 |   block ;
 
 exprStmt        ::= expression ";" ;
-forStmt         ::= "for" "(" ( varDecl | exprStmt | ";" )
+forStmt         ::= "for" "(" ( letDecl | exprStmt | ";" )
                               expression? ";"
                               expression? ")" statement ;
 ifStmt          ::= "if" "(" expression ")" statement

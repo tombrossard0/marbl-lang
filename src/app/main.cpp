@@ -17,7 +17,7 @@
 #include "llvm/TargetParser/Host.h"
 #include <llvm/IR/LegacyPassManager.h>
 
-int compile(std::vector<UniqueStmt> &statements) {
+int compile(std::vector<UniqueStmt> &statements, std::string filename) {
     for (auto &statement : statements) {
         AstPrinter printer{};
         printer.print(*statement);
@@ -27,7 +27,7 @@ int compile(std::vector<UniqueStmt> &statements) {
     }
 
     // Generate IR
-    CodeGenVisitor codegen("marbl");
+    CodeGenVisitor codegen(filename);
     codegen.generate(statements);
 
     // Print IR to stdout
@@ -102,5 +102,5 @@ int main(int argc, char **argv) {
 
     inputFile.close();
 
-    return compile(statements);
+    return compile(statements, argv[1]);
 }

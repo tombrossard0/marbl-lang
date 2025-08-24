@@ -35,11 +35,13 @@ void AstPrinter::visitUnaryExpr(Unary &expr) {
 }
 
 void AstPrinter::visitVariableExpr(Variable &expr) {
-    // TODO
+    std::cout << expr.name.lexeme;
 }
 
 void AstPrinter::visitAssignExpr(Assign &expr) {
-    // TODO
+    std::cout << expr.name.lexeme;
+    std::cout << " = ";
+    expr.value->accept(*this);
 }
 
 void AstPrinter::visitExpressionStmt(Expression &stmt) {

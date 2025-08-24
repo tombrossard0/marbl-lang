@@ -85,7 +85,8 @@ class Parser {
         if (match(FALSE)) return std::make_unique<Literal>(false);
         // if (match(THIS)) return std::make_unique<Literal>(THIS); // TODO
 
-        if (match(NUMBER, STRING, IDENTIFIER)) return std::make_unique<Literal>(previousToken.literal);
+        if (match(NUMBER, STRING)) return std::make_unique<Literal>(previousToken.literal);
+        if (match(IDENTIFIER)) return std::make_unique<Variable>(previousToken);
 
         if (match(LEFT_PAREN)) {
             UniqueExpr expr = expression();
@@ -171,6 +172,8 @@ class Parser {
     }
 
     UniqueExpr assignment() {
+        // assignment     ::= ( call "." )? IDENTIFIER "=" assignment
+        //                |   logic_or ;
         UniqueExpr expr = equality();
 
         if (match(EQUAL)) {
@@ -188,26 +191,39 @@ class Parser {
         return expr;
     }
 
-    UniqueExpr expression() { return assignment(); }
-
-    UniqueStmt printStatement() {
-        UniqueExpr value = expression();
-        consume(SEMICOLON, "Expect ';' after value.");
-        return std::make_unique<Print>(std::move(value));
+    UniqueExpr expression() {
+        // expression     ::= assignment ;
+        return assignment();
     }
 
     UniqueStmt expressionStatement() {
+        // exprStmt        ::= expression ";" ;
         UniqueExpr value = expression();
         consume(SEMICOLON, "Expect ';' after value.");
         return std::make_unique<Expression>(std::move(value));
     }
 
+    UniqueStmt printStatement() {
+        // printStmt       ::= "print" expression ";" ;
+        UniqueExpr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return std::make_unique<Print>(std::move(value));
+    }
+
     UniqueStmt statement() {
+        // statement       ::= exprStmt
+        //                 |   forStmt
+        //                 |   ifStmt
+        //                 |   printStmt
+        //                 |   returnStmt
+        //                 |   whileStmt
+        //                 |   block ;
         if (match(PRINT)) return printStatement();
         return expressionStatement();
     }
 
     UniqueStmt letDeclaration() {
+        // letDecl         ::= "let" IDENTIFIER ":" IDENTIFIER ( "=" expression )? ";" ;
         Token name = consume(IDENTIFIER, "Expect variable name.");
 
         UniqueExpr initializer = nullptr;
@@ -218,9 +234,12 @@ class Parser {
     }
 
     UniqueStmt declaration() {
+        // declaration     ::= classDecl
+        //                 |   funDecl
+        //                 |   letDecl
+        //                 |   statement ;
         try {
             if (match(LET)) return letDeclaration();
-
             return statement();
         } catch (ParserException err) {
             synchronize();

@@ -85,11 +85,18 @@ llvm::Value *CodeGenVisitor::visitGroupingExpr(Grouping &expr) {
 
 llvm::Value *CodeGenVisitor::visitVariableExpr(Variable &expr) {
     llvm::Value *alloca = Identifier::variables[expr.name.lexeme];
-    return builder.CreateLoad(alloca->getType()->getNonOpaquePointerElementType(), alloca, expr.name.lexeme);
+    auto *ptrTy = llvm::cast<llvm::AllocaInst>(alloca)->getAllocatedType();
+    return builder.CreateLoad(ptrTy, alloca, expr.name.lexeme);
 }
 
 llvm::Value *CodeGenVisitor::visitAssignExpr(Assign &expr) {
+    auto *alloca = Identifier::variables[expr.name.lexeme];
+    if (!alloca) { throw std::runtime_error("Undefined variable: " + expr.name.lexeme); }
+
     llvm::Value *value = expr.value->accept(*this);
+
+    builder.CreateStore(value, alloca);
+
     return value;
 }
 
@@ -118,14 +125,13 @@ void CodeGenVisitor::visitPrintStmt(Print &stmt) {
 }
 
 void CodeGenVisitor::visitLetStmt(Let &stmt) {
-    // TODO
     llvm::Value *value = stmt.initializer->accept(*this);
 
     // Allocate space on the stack for the variable
     llvm::AllocaInst *alloca = builder.CreateAlloca(value->getType(), nullptr, stmt.name.lexeme);
     builder.CreateStore(value, alloca);
 
-    Identifier::variables[stmt.name.lexeme] = value;
+    Identifier::variables[stmt.name.lexeme] = alloca;
 }
 
 // === Entry point: wraps expression in function main ===

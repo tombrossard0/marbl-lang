@@ -1,3 +1,8 @@
 let hello = "hello world!!!!!!!";
-print "hello world!";
+hello = "hello world2";
+
+let x = 234;
+x = 1092;
+
+print x;
 print hello;
