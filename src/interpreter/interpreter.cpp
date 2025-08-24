@@ -210,8 +210,19 @@ Object Interpreter::visitUnaryExpr(Unary &expr) {
     throw std::runtime_error("This line should never be reached, it yes, please check the parser.");
 }
 
+Object Interpreter::visitVariableExpr(Variable &expr) {
+    // TODO
+}
+
+Object Interpreter::visitAssignExpr(Assign &expr) {
+    // TODO
+}
+
 void Interpreter::visitExpressionStmt(Expression &stmt) {
 }
 
 void Interpreter::visitPrintStmt(Print &stmt) {
+}
+
+void Interpreter::visitLetStmt(Let &stmt) {
 }

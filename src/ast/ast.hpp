@@ -23,27 +23,36 @@ class Binary;
 class Grouping;
 class Literal;
 class Unary;
+class Variable;
+class Assign;
 
 class Expression;
 class Print;
+class Let;
 
 #define BINARY_FIELDS(X, Y) X(UniqueExpr, left) X(Token, op) Y(UniqueExpr, right)
 #define GROUPING_FIELDS(X, Y) Y(UniqueExpr, expression)
 #define LITERAL_FIELDS(X, Y) Y(Object, value)
 #define UNARY_FIELDS(X, Y) X(Token, op) Y(UniqueExpr, right)
+#define VARIABLE_FIELDS(X, Y) Y(Token, name)
+#define ASSIGN_FIELDS(X, Y) X(Token, name) Y(UniqueExpr, value)
 
 #define EXPRESSION_FIELDS(X, Y) Y(UniqueExpr, expression)
 #define PRINT_FIELDS(X, Y) Y(UniqueExpr, expression)
+#define LET_FIELDS(X, Y) X(Token, name) Y(UniqueExpr, initializer)
 
 #define EXPR_AST_NODES(X)                                                                                    \
     X(Binary, BINARY_FIELDS, Expr)                                                                           \
     X(Grouping, GROUPING_FIELDS, Expr)                                                                       \
     X(Literal, LITERAL_FIELDS, Expr)                                                                         \
-    X(Unary, UNARY_FIELDS, Expr)
+    X(Unary, UNARY_FIELDS, Expr)                                                                             \
+    X(Variable, VARIABLE_FIELDS, Expr)                                                                       \
+    X(Assign, ASSIGN_FIELDS, Expr)
 
 #define STMT_AST_NODES(X)                                                                                    \
     X(Expression, EXPRESSION_FIELDS, Stmt)                                                                   \
-    X(Print, PRINT_FIELDS, Stmt)
+    X(Print, PRINT_FIELDS, Stmt)                                                                             \
+    X(Let, LET_FIELDS, Stmt)
 
 // ======= Visitor Template =======
 template <typename T> class ExprVisitor {

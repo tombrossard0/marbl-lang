@@ -11,7 +11,10 @@ class AstPrinter : public ExprVisitor<void>, StmtVisitor<void> {
     void visitGroupingExpr(Grouping &expr) override;
     void visitLiteralExpr(Literal &expr) override;
     void visitUnaryExpr(Unary &expr) override;
+    void visitVariableExpr(Variable &expr) override;
+    void visitAssignExpr(Assign &expr) override;
 
     void visitExpressionStmt(Expression &stmt) override;
     void visitPrintStmt(Print &stmt) override;
+    void visitLetStmt(Let &stmt) override;
 };

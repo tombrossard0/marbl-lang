@@ -1,5 +1,22 @@
 #include "llvm_codegen.hpp"
 
+// llvm::Value *CodeGenVisitor::valueFromId(std::string id) {
+//     return std::visit(
+//         [&](auto &&val) -> llvm::Value * {
+//             using T = std::decay_t<decltype(val)>;
+//             if constexpr (std::is_same_v<T, int>)
+//                 return llvm::ConstantInt::get(context, llvm::APInt(32, val));
+//             else if constexpr (std::is_same_v<T, double>)
+//                 return llvm::ConstantFP::get(context, llvm::APFloat(val));
+//             else if constexpr (std::is_same_v<T, bool>)
+//                 return llvm::ConstantInt::get(context, llvm::APInt(1, val));
+//             else if constexpr (std::is_same_v<T, std::string>)
+//                 return builder.CreateGlobalStringPtr(val);
+//             else { throw std::runtime_error("Type not yet supported in codegen"); }
+//         },
+//         Identifier::variables[id]);
+// }
+
 llvm::Value *CodeGenVisitor::visitLiteralExpr(Literal &expr) {
     return std::visit(
         [&](auto &&val) -> llvm::Value * {
@@ -12,7 +29,12 @@ llvm::Value *CodeGenVisitor::visitLiteralExpr(Literal &expr) {
                 return llvm::ConstantInt::get(context, llvm::APInt(1, val));
             else if constexpr (std::is_same_v<T, std::string>)
                 return builder.CreateGlobalStringPtr(val);
-            else { throw std::runtime_error("Type not yet supported in codegen"); }
+            else if constexpr (std::is_same_v<T, struct Identifier>) {
+                // return valueFromId(val.id);
+                return Identifier::variables[val.id];
+            } else {
+                throw std::runtime_error("Type not yet supported in codegen");
+            }
         },
         expr.value);
 }
@@ -61,7 +83,18 @@ llvm::Value *CodeGenVisitor::visitGroupingExpr(Grouping &expr) {
     return expr.expression->accept(*this);
 }
 
+llvm::Value *CodeGenVisitor::visitVariableExpr(Variable &expr) {
+    llvm::Value *alloca = Identifier::variables[expr.name.lexeme];
+    return builder.CreateLoad(alloca->getType()->getNonOpaquePointerElementType(), alloca, expr.name.lexeme);
+}
+
+llvm::Value *CodeGenVisitor::visitAssignExpr(Assign &expr) {
+    llvm::Value *value = expr.value->accept(*this);
+    return value;
+}
+
 void CodeGenVisitor::visitExpressionStmt(Expression &stmt) {
+    auto *res = stmt.expression->accept(*this);
 }
 
 void CodeGenVisitor::visitPrintStmt(Print &stmt) {
@@ -82,6 +115,17 @@ void CodeGenVisitor::visitPrintStmt(Print &stmt) {
         llvm::FunctionType::get(builder.getInt32Ty(), llvm::PointerType::get(builder.getInt8Ty(), 0), true);
     llvm::FunctionCallee printfFunc = module.getOrInsertFunction("printf", printfType);
     builder.CreateCall(printfFunc, {formatStr, res});
+}
+
+void CodeGenVisitor::visitLetStmt(Let &stmt) {
+    // TODO
+    llvm::Value *value = stmt.initializer->accept(*this);
+
+    // Allocate space on the stack for the variable
+    llvm::AllocaInst *alloca = builder.CreateAlloca(value->getType(), nullptr, stmt.name.lexeme);
+    builder.CreateStore(value, alloca);
+
+    Identifier::variables[stmt.name.lexeme] = value;
 }
 
 // === Entry point: wraps expression in function main ===

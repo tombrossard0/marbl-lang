@@ -16,7 +16,7 @@ class Parser {
 
     std::vector<UniqueStmt> parse() {
         std::vector<UniqueStmt> statements;
-        while (!isAtEnd()) { statements.push_back(statement()); }
+        while (!isAtEnd()) { statements.push_back(declaration()); }
 
         return statements;
     }
@@ -170,10 +170,25 @@ class Parser {
         return expr;
     }
 
-    UniqueExpr expression() {
+    UniqueExpr assignment() {
         UniqueExpr expr = equality();
+
+        if (match(EQUAL)) {
+            Token equals = previousToken;
+            UniqueExpr value = assignment();
+
+            if (auto *var = dynamic_cast<Variable *>(expr.get())) {
+                Token name = var->name;
+                return std::make_unique<Assign>(name, std::move(value));
+            }
+
+            throw std::runtime_error("Invalid assignment target.");
+        }
+
         return expr;
     }
+
+    UniqueExpr expression() { return assignment(); }
 
     UniqueStmt printStatement() {
         UniqueExpr value = expression();
@@ -190,5 +205,26 @@ class Parser {
     UniqueStmt statement() {
         if (match(PRINT)) return printStatement();
         return expressionStatement();
+    }
+
+    UniqueStmt letDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect variable name.");
+
+        UniqueExpr initializer = nullptr;
+        if (match(EQUAL)) { initializer = expression(); }
+
+        consume(SEMICOLON, "Expect ';' after variable declaration");
+        return std::make_unique<Let>(name, std::move(initializer));
+    }
+
+    UniqueStmt declaration() {
+        try {
+            if (match(LET)) return letDeclaration();
+
+            return statement();
+        } catch (ParserException err) {
+            synchronize();
+            return nullptr;
+        }
     }
 };

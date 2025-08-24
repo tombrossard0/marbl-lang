@@ -1,9 +1,21 @@
 #pragma once
 
 #include <iostream>
+#include <unordered_map>
 #include <variant>
 
-using Object = std::variant<int, double, std::string, bool>;
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+
+struct Identifier;
+
+using Object = std::variant<int, double, std::string, bool, struct Identifier>;
+
+struct Identifier {
+    inline static std::unordered_map<std::string, llvm::Value *> variables = {};
+    std::string id;
+};
 
 inline std::ostream &operator<<(std::ostream &os, const Object &obj) {
     std::visit(
@@ -13,6 +25,8 @@ inline std::ostream &operator<<(std::ostream &os, const Object &obj) {
                 os << "\"" << val << "\"";
             } else if constexpr (std::is_same_v<T, bool>) {
                 os << (val ? "true" : "false");
+            } else if constexpr (std::is_same_v<T, struct Identifier>) {
+                os << val.id;
             } else {
                 os << val;
             }

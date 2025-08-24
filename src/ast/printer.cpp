@@ -34,6 +34,14 @@ void AstPrinter::visitUnaryExpr(Unary &expr) {
     std::cout << " )";
 }
 
+void AstPrinter::visitVariableExpr(Variable &expr) {
+    // TODO
+}
+
+void AstPrinter::visitAssignExpr(Assign &expr) {
+    // TODO
+}
+
 void AstPrinter::visitExpressionStmt(Expression &stmt) {
     stmt.expression->accept(*this);
     std::cout << ";";
@@ -42,5 +50,11 @@ void AstPrinter::visitExpressionStmt(Expression &stmt) {
 void AstPrinter::visitPrintStmt(Print &stmt) {
     std::cout << "print(";
     stmt.expression->accept(*this);
-    std::cout << ")";
+    std::cout << ");";
+}
+
+void AstPrinter::visitLetStmt(Let &stmt) {
+    std::cout << "let " << stmt.name.literal << " = ";
+    stmt.initializer->accept(*this);
+    std::cout << ";";
 }

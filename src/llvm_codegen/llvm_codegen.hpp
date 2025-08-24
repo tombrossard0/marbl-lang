@@ -37,13 +37,17 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
     }
 
     llvm::Module &getModule() { return module; }
+
     void generate(std::vector<UniqueStmt> &statements);
 
     llvm::Value *visitLiteralExpr(Literal &expr) override;
     llvm::Value *visitBinaryExpr(Binary &expr) override;
     llvm::Value *visitUnaryExpr(Unary &expr) override;
     llvm::Value *visitGroupingExpr(Grouping &expr) override;
+    llvm::Value *visitVariableExpr(Variable &expr) override;
+    llvm::Value *visitAssignExpr(Assign &expr) override;
 
     void visitExpressionStmt(Expression &stmt) override;
     void visitPrintStmt(Print &stmt) override;
+    void visitLetStmt(Let &stmt) override;
 };

@@ -116,7 +116,7 @@ print                       { REPLACE(TokenType::PRINT, yytext); }
                                     REPLACE(TokenType::NUMBER, std::stoi(numStr));
                                 }
                             }
-{ID}                        { REPLACE(TokenType::IDENTIFIER, yytext); }
+{ID}                        { REPLACE(TokenType::IDENTIFIER, Identifier{yytext}); }
 {STRING}                    { REPLACE(TokenType::STRING, unescape(std::string(yytext + 1, yyleng - 2))); }
 
 <<EOF>>                     { REPLACE(TokenType::T_EOF, yytext); }
