@@ -8,13 +8,11 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 
-struct Identifier;
-
-using Object = std::variant<int, double, std::string, bool, struct Identifier>;
-
 struct Identifier {
     std::string id;
 };
+
+using Object = std::variant<int, double, std::string, bool, struct Identifier>;
 
 inline std::ostream &operator<<(std::ostream &os, const Object &obj) {
     std::visit(

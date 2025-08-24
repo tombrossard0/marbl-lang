@@ -13,9 +13,7 @@ llvm::Value *CodeGenVisitor::visitLiteralExpr(Literal &expr) {
             else if constexpr (std::is_same_v<T, std::string>)
                 return builder.CreateGlobalStringPtr(val);
             else if constexpr (std::is_same_v<T, struct Identifier>) {
-                llvm::Value *value = Environment::variables[val.id];
-                if (!value) { throw std::runtime_error("Undefined variable: " + val.id); }
-                return value;
+                return env.get(val.id);
             } else {
                 throw std::runtime_error("Type not yet supported in codegen");
             }
@@ -68,20 +66,14 @@ llvm::Value *CodeGenVisitor::visitGroupingExpr(Grouping &expr) {
 }
 
 llvm::Value *CodeGenVisitor::visitVariableExpr(Variable &expr) {
-    llvm::Value *alloca = Environment::variables[expr.name.lexeme];
-    if (!alloca) { throw std::runtime_error("Undefined variable: " + expr.name.lexeme); }
+    llvm::Value *alloca = env.get(expr.name.lexeme);
     auto *ptrTy = llvm::cast<llvm::AllocaInst>(alloca)->getAllocatedType();
     return builder.CreateLoad(ptrTy, alloca, expr.name.lexeme);
 }
 
 llvm::Value *CodeGenVisitor::visitAssignExpr(Assign &expr) {
-    auto *alloca = Environment::variables[expr.name.lexeme];
-    if (!alloca) { throw std::runtime_error("Undefined variable: " + expr.name.lexeme); }
-
     llvm::Value *value = expr.value->accept(*this);
-
-    builder.CreateStore(value, alloca);
-
+    env.assign(*this, expr.name.lexeme, value);
     return value;
 }
 
@@ -111,12 +103,7 @@ void CodeGenVisitor::visitPrintStmt(Print &stmt) {
 
 void CodeGenVisitor::visitLetStmt(Let &stmt) {
     llvm::Value *value = stmt.initializer->accept(*this);
-
-    // Allocate space on the stack for the variable
-    llvm::AllocaInst *alloca = builder.CreateAlloca(value->getType(), nullptr, stmt.name.lexeme);
-    builder.CreateStore(value, alloca);
-
-    Environment::variables[stmt.name.lexeme] = alloca;
+    env.declare(*this, stmt.name.lexeme, value);
 }
 
 // === Entry point: wraps expression in function main ===

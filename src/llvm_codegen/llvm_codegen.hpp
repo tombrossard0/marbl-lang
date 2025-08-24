@@ -8,9 +8,35 @@
 
 class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
     class Environment {
+        std::unordered_map<std::string, llvm::Value *> variables;
+        Environment *enclosing;
+
       public:
-        inline static std::unordered_map<std::string, llvm::Value *> variables = {};
+        Environment() : variables(), enclosing{nullptr} {}
+        Environment(Environment *enclosing) : enclosing(enclosing) {}
+
+        inline llvm::Value *get(std::string id) {
+            auto *value = variables[id];
+
+            if (!value && enclosing) return enclosing->get(id);
+            if (!value) throw std::runtime_error("Undefined variable: " + id);
+
+            return value;
+        }
+
+        inline void assign(CodeGenVisitor &codeGenVisitor, std::string id, llvm::Value *value) {
+            codeGenVisitor.builder.CreateStore(value, Environment::get(id));
+        }
+
+        inline void declare(CodeGenVisitor &codeGenVisitor, std::string id, llvm::Value *value) {
+            // Allocate space on the stack for the variable
+            llvm::AllocaInst *alloca = codeGenVisitor.builder.CreateAlloca(value->getType(), nullptr, id);
+            codeGenVisitor.builder.CreateStore(value, alloca);
+            Environment::variables[id] = alloca;
+        }
     };
+
+    Environment env;
 
     llvm::LLVMContext context;
     llvm::Module module;
@@ -21,7 +47,7 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
     llvm::Function *memcpyFunc;
 
   public:
-    CodeGenVisitor(const std::string &moduleName) : module(moduleName, context), builder(context) {
+    CodeGenVisitor(const std::string &moduleName) : env(), module(moduleName, context), builder(context) {
         // Declare external C functions
         strlenFunc = llvm::Function::Create(
             llvm::FunctionType::get(builder.getInt32Ty(), {builder.getIntPtrTy(module.getDataLayout(), 8)},
