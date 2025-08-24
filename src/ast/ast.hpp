@@ -29,6 +29,7 @@ class Assign;
 class Expression;
 class Print;
 class Let;
+class Block;
 
 #define BINARY_FIELDS(X, Y) X(UniqueExpr, left) X(Token, op) Y(UniqueExpr, right)
 #define GROUPING_FIELDS(X, Y) Y(UniqueExpr, expression)
@@ -40,6 +41,7 @@ class Let;
 #define EXPRESSION_FIELDS(X, Y) Y(UniqueExpr, expression)
 #define PRINT_FIELDS(X, Y) Y(UniqueExpr, expression)
 #define LET_FIELDS(X, Y) X(Token, name) Y(UniqueExpr, initializer)
+#define BLOCK_FIELDS(X, Y) Y(std::vector<UniqueStmt>, statements)
 
 #define EXPR_AST_NODES(X)                                                                                    \
     X(Binary, BINARY_FIELDS, Expr)                                                                           \
@@ -52,7 +54,8 @@ class Let;
 #define STMT_AST_NODES(X)                                                                                    \
     X(Expression, EXPRESSION_FIELDS, Stmt)                                                                   \
     X(Print, PRINT_FIELDS, Stmt)                                                                             \
-    X(Let, LET_FIELDS, Stmt)
+    X(Let, LET_FIELDS, Stmt)                                                                                 \
+    X(Block, BLOCK_FIELDS, Stmt)
 
 // ======= Visitor Template =======
 template <typename T> class ExprVisitor {

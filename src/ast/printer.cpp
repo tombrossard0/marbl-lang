@@ -60,3 +60,9 @@ void AstPrinter::visitLetStmt(Let &stmt) {
     stmt.initializer->accept(*this);
     std::cout << ";";
 }
+
+void AstPrinter::visitBlockStmt(Block &stmt) {
+    std::cout << "{" << std::endl;
+    for (auto &sub_stmt : stmt.statements) sub_stmt->accept(*this);
+    std::cout << "}" << std::endl;
+}

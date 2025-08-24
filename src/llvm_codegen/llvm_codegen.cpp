@@ -106,6 +106,9 @@ void CodeGenVisitor::visitLetStmt(Let &stmt) {
     env.declare(*this, stmt.name.lexeme, value);
 }
 
+void CodeGenVisitor::visitBlockStmt(Block &stmt) {
+}
+
 // === Entry point: wraps expression in function main ===
 void CodeGenVisitor::generate(std::vector<UniqueStmt> &statements) {
     auto *funcType = llvm::FunctionType::get(builder.getInt32Ty(), false);

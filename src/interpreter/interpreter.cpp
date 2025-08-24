@@ -226,3 +226,6 @@ void Interpreter::visitPrintStmt(Print &stmt) {
 
 void Interpreter::visitLetStmt(Let &stmt) {
 }
+
+void visitBlockStmt(Block &stmt) {
+}
