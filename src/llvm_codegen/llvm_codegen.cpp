@@ -24,6 +24,7 @@ llvm::Value *CodeGenVisitor::visitBinaryExpr(Binary &expr) {
     switch (expr.op.type) {
     case TokenType::PLUS:
         if (L->getType()->isDoubleTy()) return builder.CreateFAdd(L, R, "addtmp");
+        // if (L->getType()->isPointerTy()) return emitStringConcat(L, R);
         return builder.CreateAdd(L, R, "addtmp");
 
     case TokenType::MINUS:
@@ -60,6 +61,12 @@ llvm::Value *CodeGenVisitor::visitGroupingExpr(Grouping &expr) {
     return expr.expression->accept(*this);
 }
 
+llvm::Value *CodeGenVisitor::visitExpressionStmt(Expression &stmt) {
+}
+
+llvm::Value *CodeGenVisitor::visitPrintStmt(Print &stmt) {
+}
+
 // === Entry point: wraps expression in function main ===
 void CodeGenVisitor::generate(Expr &expr) {
     auto *funcType = llvm::FunctionType::get(builder.getInt32Ty(), false);
@@ -78,8 +85,7 @@ void CodeGenVisitor::generate(Expr &expr) {
         formatStr = builder.CreateGlobalStringPtr("%f\n");
     else if (res->getType()->isPointerTy())
         formatStr = builder.CreateGlobalStringPtr("%s\n");
-    else
-        throw std::runtime_error("Unsupported type for printing");
+    else { throw std::runtime_error("Unsupported type for printing ;-;"); }
 
     llvm::FunctionType *printfType =
         llvm::FunctionType::get(builder.getInt32Ty(), llvm::PointerType::get(builder.getInt8Ty(), 0), true);

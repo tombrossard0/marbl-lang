@@ -13,4 +13,7 @@ class Interpreter : public Visitor<Object> {
     Object visitGroupingExpr(Grouping &expr) override;
     Object visitLiteralExpr(Literal &expr) override;
     Object visitUnaryExpr(Unary &expr) override;
+
+    Object visitExpressionStmt(Expression &stmt) override;
+    Object visitPrintStmt(Print &stmt) override;
 };

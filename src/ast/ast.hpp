@@ -23,26 +23,38 @@ class Grouping;
 class Literal;
 class Unary;
 
+class Expression;
+class Print;
+
 #define BINARY_FIELDS(X, Y) X(UniqueExpr, left) X(Token, op) Y(UniqueExpr, right)
 #define GROUPING_FIELDS(X, Y) Y(UniqueExpr, expression)
 #define LITERAL_FIELDS(X, Y) Y(Object, value)
 #define UNARY_FIELDS(X, Y) X(Token, op) Y(UniqueExpr, right)
+#define EXPRESSION_FIELDS(X, Y) Y(UniqueExpr, expression)
+#define PRINT_FIELDS(X, Y) Y(UniqueExpr, expression)
 
-#define AST_NODES(X)                                                                                         \
-    X(Binary, BINARY_FIELDS)                                                                                 \
-    X(Grouping, GROUPING_FIELDS)                                                                             \
-    X(Literal, LITERAL_FIELDS)                                                                               \
-    X(Unary, UNARY_FIELDS)
+#define EXPR_AST_NODES(X)                                                                                    \
+    X(Binary, BINARY_FIELDS, Expr)                                                                           \
+    X(Grouping, GROUPING_FIELDS, Expr)                                                                       \
+    X(Literal, LITERAL_FIELDS, Expr)                                                                         \
+    X(Unary, UNARY_FIELDS, Expr)
+
+#define STMT_AST_NODES(X)                                                                                    \
+    X(Expression, EXPRESSION_FIELDS, Stmt)                                                                   \
+    X(Print, PRINT_FIELDS, Stmt)
 
 // ======= Visitor Template =======
 template <typename T> class Visitor {
   public:
-#define VISIT_METHOD(name, FIELDS) virtual T visit##name##Expr(name &expr) = 0;
-    AST_NODES(VISIT_METHOD)
+#define VISIT_METHOD(name, FIELDS, basename) virtual T visit##name##Expr(name &expr) = 0;
+    EXPR_AST_NODES(VISIT_METHOD)
+#undef VISIT_METHOD
+#define VISIT_METHOD(name, FIELDS, basename) virtual T visit##name##Stmt(name &stmt) = 0;
+    STMT_AST_NODES(VISIT_METHOD)
 #undef VISIT_METHOD
 };
 
-// ======= Expr Base Class =======
+// ======= Expr & Smt Base Class =======
 class Expr {
   public:
     virtual ~Expr() = default;
@@ -51,23 +63,32 @@ class Expr {
     virtual llvm::Value *accept(Visitor<llvm::Value *> &visitor) = 0;
 };
 
+class Stmt {
+  public:
+    virtual ~Stmt() = default;
+    virtual void accept(Visitor<void> &visitor) = 0;
+    virtual Object accept(Visitor<Object> &visitor) = 0;
+    virtual llvm::Value *accept(Visitor<llvm::Value *> &visitor) = 0;
+};
+
 // ======= AST Subclass Macro =======
-#define DEFINE_AST_SUBCLASS(name, FIELDS)                                                                    \
-    class name : public Expr {                                                                               \
+#define DEFINE_AST_SUBCLASS(name, FIELDS, basename)                                                          \
+    class name : public basename {                                                                           \
       public:                                                                                                \
         FIELDS(FIELD_MEMBER, FIELD_MEMBER)                                                                   \
         name(FIELDS(FIELD_PARAMS, FIELD_PARAMS_END)) : FIELDS(FIELD_INIT, FIELD_INIT_END) {                  \
         }                                                                                                    \
         void accept(Visitor<void> &visitor) override {                                                       \
-            visitor.visit##name##Expr(*this);                                                                \
+            visitor.visit##name##basename(*this);                                                            \
         }                                                                                                    \
         Object accept(Visitor<Object> &visitor) override {                                                   \
-            return visitor.visit##name##Expr(*this);                                                         \
+            return visitor.visit##name##basename(*this);                                                     \
         }                                                                                                    \
         llvm::Value *accept(Visitor<llvm::Value *> &visitor) override {                                      \
-            return visitor.visit##name##Expr(*this);                                                         \
+            return visitor.visit##name##basename(*this);                                                     \
         }                                                                                                    \
     };
 
 // ======= Generate AST Nodes =======
-AST_NODES(DEFINE_AST_SUBCLASS)
+EXPR_AST_NODES(DEFINE_AST_SUBCLASS)
+STMT_AST_NODES(DEFINE_AST_SUBCLASS)

@@ -33,3 +33,9 @@ void AstPrinter::visitUnaryExpr(Unary &expr) {
     expr.right->accept(*this);
     std::cout << " )";
 }
+
+void AstPrinter::visitExpressionStmt(Expression &stmt) {
+}
+
+void AstPrinter::visitPrintStmt(Print &stmt) {
+}
