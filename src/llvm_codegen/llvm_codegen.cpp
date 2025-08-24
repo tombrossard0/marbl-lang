@@ -10,7 +10,9 @@ llvm::Value *CodeGenVisitor::visitLiteralExpr(Literal &expr) {
                 return llvm::ConstantFP::get(context, llvm::APFloat(val));
             else if constexpr (std::is_same_v<T, bool>)
                 return llvm::ConstantInt::get(context, llvm::APInt(1, val));
-            else { throw std::runtime_error("Strings not yet supported in codegen"); }
+            else if constexpr (std::is_same_v<T, std::string>)
+                return builder.CreateGlobalStringPtr(val);
+            else { throw std::runtime_error("Type not yet supported in codegen"); }
         },
         expr.value);
 }
@@ -67,7 +69,18 @@ void CodeGenVisitor::generate(Expr &expr) {
 
     auto *res = expr.accept(*this);
 
-    llvm::Value *formatStr = builder.CreateGlobalStringPtr("%d\n");
+    llvm::Value *formatStr = nullptr;
+    if (res->getType()->isIntegerTy(32))
+        formatStr = builder.CreateGlobalStringPtr("%d\n");
+    else if (res->getType()->isIntegerTy(1))
+        formatStr = builder.CreateGlobalStringPtr("%d\n");
+    else if (res->getType()->isDoubleTy())
+        formatStr = builder.CreateGlobalStringPtr("%f\n");
+    else if (res->getType()->isPointerTy())
+        formatStr = builder.CreateGlobalStringPtr("%s\n");
+    else
+        throw std::runtime_error("Unsupported type for printing");
+
     llvm::FunctionType *printfType =
         llvm::FunctionType::get(builder.getInt32Ty(), llvm::PointerType::get(builder.getInt8Ty(), 0), true);
     llvm::FunctionCallee printfFunc = module.getOrInsertFunction("printf", printfType);

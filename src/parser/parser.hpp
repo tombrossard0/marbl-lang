@@ -171,8 +171,6 @@ class Parser {
 
     UniqueExpr expression() {
         UniqueExpr expr = equality();
-
-        consume(SEMICOLON, "Except ';' at the end of an expression.");
         return expr;
     }
 };
