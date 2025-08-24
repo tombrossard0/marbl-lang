@@ -1,1 +1,3 @@
-"hello \"tom\"!"
+1 + 2;
+
+1.2 + 4.4; "hello world!";

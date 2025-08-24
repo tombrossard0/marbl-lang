@@ -12,7 +12,7 @@ class Parser {
   public:
     Lexer lexer;
 
-    Parser(std::istream &input) : lexer(input) { advance(); }
+    Parser(std::istream &input) : lexer(input) {}
 
     UniqueExpr parse() {
         try {
@@ -20,12 +20,15 @@ class Parser {
         } catch (ParserException err) { return nullptr; }
     }
 
+    bool isAtEnd() { return peek().type == TokenType::T_EOF; }
+
   private:
     Token previousToken;
 
-    Token peek() { return lexer.currentToken; }
-
-    bool isAtEnd() { return peek().type == TokenType::T_EOF; }
+    Token peek() {
+        if (lexer.currentToken.type == TokenType::T_SOF) lexer.nextToken();
+        return lexer.currentToken;
+    }
 
     Token advance() {
         // Consumes the current token and returns it
@@ -166,5 +169,10 @@ class Parser {
         return expr;
     }
 
-    UniqueExpr expression() { return equality(); }
+    UniqueExpr expression() {
+        UniqueExpr expr = equality();
+
+        consume(SEMICOLON, "Except ';' at the end of an expression.");
+        return expr;
+    }
 };

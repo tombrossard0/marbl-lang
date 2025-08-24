@@ -1,5 +1,6 @@
 #include "marbl.hpp"
 
+#include <sstream>
 #include <vector>
 
 #include "interpreter.hpp"
@@ -24,13 +25,16 @@ int Marbl::runFile(char *filepath) {
     // }
 
     Parser parser{inputFile};
-    UniqueExpr expression = parser.parse();
 
-    AstPrinter printer{};
-    printer.print(*expression);
+    while (parser.lexer.currentToken.type != TokenType::T_EOF) {
+        UniqueExpr expression = parser.parse();
 
-    Interpreter interpreter{};
-    interpreter.interpret(*expression);
+        AstPrinter printer{};
+        printer.print(*expression);
+
+        Interpreter interpreter{};
+        interpreter.interpret(*expression);
+    }
 
     inputFile.close();
 
@@ -40,19 +44,36 @@ int Marbl::runFile(char *filepath) {
 }
 
 int Marbl::runPrompt() {
-    int currentType = TokenType::T_SOF;
+    std::string line;
 
-    do {
-        Lexer lexer(std::cin);
-
+    while (true) {
         std::cout << "> ";
-        while ((currentType = lexer.nextToken()) != TokenType::SEMICOLON && currentType != TokenType::T_EOF) {
-            std::cout << lexer.currentToken << std::endl;
+        if (!std::getline(std::cin, line)) break; // EOF
+
+        if (line.empty()) continue;
+
+        std::stringstream ss(line);
+        Parser parser{ss};
+        if (parser.lexer.currentToken.type == T_EOF) parser.lexer.nextToken(); // RESET
+
+        while (!parser.isAtEnd()) {
+            UniqueExpr expression;
+            expression = parser.parse();
+            if (!expression) {
+                std::cerr << "Parse returned null expression." << std::endl;
+                hadError = true;
+                continue;
+            }
+
+            AstPrinter printer{};
+            printer.print(*expression);
+
+            Interpreter interpreter{};
+            interpreter.interpret(*expression);
         }
-        std::cout << lexer.currentToken << std::endl;
-    } while (currentType != TokenType::T_EOF);
+    }
 
-    if (hadError) EX_DATAERR;
+    std::cout << std::endl;
 
-    return EX_OK;
+    return hadError ? EX_DATAERR : EX_OK;
 }
