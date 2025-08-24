@@ -1,8 +1,10 @@
 #pragma once
 
-#include "tokens.hpp"
 #include <memory>
 #include <string>
+
+#include "llvm-18/llvm/IR/IRBuilder.h"
+#include "tokens.hpp"
 
 // ======= Utility Types =======
 using UniqueExpr = std::unique_ptr<class Expr>;
@@ -46,6 +48,7 @@ class Expr {
     virtual ~Expr() = default;
     virtual void accept(Visitor<void> &visitor) = 0;
     virtual Object accept(Visitor<Object> &visitor) = 0;
+    virtual llvm::Value *accept(Visitor<llvm::Value *> &visitor) = 0;
 };
 
 // ======= AST Subclass Macro =======
@@ -59,6 +62,9 @@ class Expr {
             visitor.visit##name##Expr(*this);                                                                \
         }                                                                                                    \
         Object accept(Visitor<Object> &visitor) override {                                                   \
+            return visitor.visit##name##Expr(*this);                                                         \
+        }                                                                                                    \
+        llvm::Value *accept(Visitor<llvm::Value *> &visitor) override {                                      \
             return visitor.visit##name##Expr(*this);                                                         \
         }                                                                                                    \
     };

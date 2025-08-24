@@ -17,13 +17,6 @@ int Marbl::runFile(char *filepath) {
         return EX_NOINPUT;
     }
 
-    // Lexer lexer(inputFile);
-
-    // int currentType;
-    // while ((currentType = lexer.nextToken()) != TokenType::T_EOF) {
-    //     std::cout << lexer.currentToken << std::endl;
-    // }
-
     Parser parser{inputFile};
 
     while (parser.lexer.currentToken.type != TokenType::T_EOF) {

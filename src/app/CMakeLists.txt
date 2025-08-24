@@ -4,6 +4,7 @@ target_link_libraries(marbl_app
     PRIVATE
         marbl
         ast
+        llvm_codegen
 )
 
 # Put the executable directly in the build/ folder
