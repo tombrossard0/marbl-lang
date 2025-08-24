@@ -13,7 +13,7 @@ llvm::Value *CodeGenVisitor::visitLiteralExpr(Literal &expr) {
             else if constexpr (std::is_same_v<T, std::string>)
                 return builder.CreateGlobalStringPtr(val);
             else if constexpr (std::is_same_v<T, struct Identifier>) {
-                return env.get(val.id);
+                return env->get(val.id);
             } else {
                 throw std::runtime_error("Type not yet supported in codegen");
             }
@@ -66,14 +66,14 @@ llvm::Value *CodeGenVisitor::visitGroupingExpr(Grouping &expr) {
 }
 
 llvm::Value *CodeGenVisitor::visitVariableExpr(Variable &expr) {
-    llvm::Value *alloca = env.get(expr.name.lexeme);
+    llvm::Value *alloca = env->get(expr.name.lexeme);
     auto *ptrTy = llvm::cast<llvm::AllocaInst>(alloca)->getAllocatedType();
     return builder.CreateLoad(ptrTy, alloca, expr.name.lexeme);
 }
 
 llvm::Value *CodeGenVisitor::visitAssignExpr(Assign &expr) {
     llvm::Value *value = expr.value->accept(*this);
-    env.assign(*this, expr.name.lexeme, value);
+    env->assign(*this, expr.name.lexeme, value);
     return value;
 }
 
@@ -103,10 +103,16 @@ void CodeGenVisitor::visitPrintStmt(Print &stmt) {
 
 void CodeGenVisitor::visitLetStmt(Let &stmt) {
     llvm::Value *value = stmt.initializer->accept(*this);
-    env.declare(*this, stmt.name.lexeme, value);
+    env->declare(*this, stmt.name.lexeme, value);
 }
 
 void CodeGenVisitor::visitBlockStmt(Block &stmt) {
+    std::cout << "Enter block\n";
+    std::unique_ptr<Environment> previousEnv = std::move(env);
+    env = std::make_unique<Environment>(previousEnv.get());
+    for (auto &subStmt : stmt.statements) { subStmt->accept(*this); }
+    env = std::move(previousEnv);
+    std::cout << "Leave block\n";
 }
 
 // === Entry point: wraps expression in function main ===

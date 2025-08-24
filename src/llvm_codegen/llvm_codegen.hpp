@@ -12,10 +12,10 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
         Environment *enclosing;
 
       public:
-        Environment() : variables(), enclosing{nullptr} {}
-        Environment(Environment *enclosing) : enclosing(enclosing) {}
+        Environment() : variables({}), enclosing{nullptr} {}
+        Environment(Environment *enclosing) : variables({}), enclosing(std::move(enclosing)) {}
 
-        inline llvm::Value *get(std::string id) {
+        llvm::Value *get(std::string id) {
             auto *value = variables[id];
 
             if (!value && enclosing) return enclosing->get(id);
@@ -24,19 +24,19 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
             return value;
         }
 
-        inline void assign(CodeGenVisitor &codeGenVisitor, std::string id, llvm::Value *value) {
+        void assign(CodeGenVisitor &codeGenVisitor, std::string id, llvm::Value *value) {
             codeGenVisitor.builder.CreateStore(value, Environment::get(id));
         }
 
-        inline void declare(CodeGenVisitor &codeGenVisitor, std::string id, llvm::Value *value) {
+        void declare(CodeGenVisitor &codeGenVisitor, std::string id, llvm::Value *value) {
             // Allocate space on the stack for the variable
             llvm::AllocaInst *alloca = codeGenVisitor.builder.CreateAlloca(value->getType(), nullptr, id);
             codeGenVisitor.builder.CreateStore(value, alloca);
-            Environment::variables[id] = alloca;
+            variables[id] = alloca;
         }
     };
 
-    Environment env;
+    std::unique_ptr<Environment> env;
 
     llvm::LLVMContext context;
     llvm::Module module;
@@ -47,7 +47,8 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
     llvm::Function *memcpyFunc;
 
   public:
-    CodeGenVisitor(const std::string &moduleName) : env(), module(moduleName, context), builder(context) {
+    CodeGenVisitor(const std::string &moduleName)
+        : env(std::make_unique<Environment>()), module(moduleName, context), builder(context) {
         // Declare external C functions
         strlenFunc = llvm::Function::Create(
             llvm::FunctionType::get(builder.getInt32Ty(), {builder.getIntPtrTy(module.getDataLayout(), 8)},

@@ -210,6 +210,16 @@ class Parser {
         return std::make_unique<Print>(std::move(value));
     }
 
+    std::vector<UniqueStmt> block() {
+        // block           ::= "{" declaration* "}" ;
+        std::vector<UniqueStmt> statements{};
+
+        while (!check(RIGHT_BRACE) && !isAtEnd()) statements.push_back(declaration());
+
+        consume(RIGHT_BRACE, "Expect '}' at end of block.");
+        return std::move(statements);
+    }
+
     UniqueStmt statement() {
         // statement       ::= exprStmt
         //                 |   forStmt
@@ -219,6 +229,8 @@ class Parser {
         //                 |   whileStmt
         //                 |   block ;
         if (match(PRINT)) return printStatement();
+        if (match(LEFT_BRACE)) return std::make_unique<Block>(block());
+
         return expressionStatement();
     }
 
