@@ -65,12 +65,13 @@ void CodeGenVisitor::generate(Expr &expr) {
     auto *bb = llvm::BasicBlock::Create(context, "entry", function);
     builder.SetInsertPoint(bb);
 
-    llvm::Value *retVal = expr.accept(*this);
-    if (retVal->getType()->isIntegerTy(32)) {
-        builder.CreateRet(retVal);
-    } else {
-        // if it's double, cast to int before returning
-        auto *casted = builder.CreateFPToSI(retVal, builder.getInt32Ty(), "casttmp");
-        builder.CreateRet(casted);
-    }
+    auto *res = expr.accept(*this);
+
+    llvm::Value *formatStr = builder.CreateGlobalStringPtr("%d\n");
+    llvm::FunctionType *printfType =
+        llvm::FunctionType::get(builder.getInt32Ty(), llvm::PointerType::get(builder.getInt8Ty(), 0), true);
+    llvm::FunctionCallee printfFunc = module.getOrInsertFunction("printf", printfType);
+    builder.CreateCall(printfFunc, {formatStr, res});
+
+    builder.CreateRet(llvm::ConstantInt::get(context, llvm::APInt(32, 0)));
 }

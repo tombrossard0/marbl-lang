@@ -45,12 +45,6 @@ int main(int argc, char **argv) {
 
     inputFile.close();
 
-    // Example: (10 + 20) * 2
-    // auto expr = std::make_unique<Binary>(
-    //     std::make_unique<Binary>(std::make_unique<Literal>(10), Token{TokenType::PLUS, "+", "+", 1, 1},
-    //                              std::make_unique<Literal>(20)),
-    //     Token{TokenType::STAR, "*", "*", 1, 1}, std::make_unique<Literal>(2));
-
     // Generate IR
     CodeGenVisitor codegen("marbl");
     codegen.generate(*expr);
@@ -75,7 +69,7 @@ int main(int argc, char **argv) {
     }
 
     llvm::TargetOptions opt;
-    auto RM = std::optional<llvm::Reloc::Model>();
+    auto RM = std::optional<llvm::Reloc::Model>(llvm::Reloc::PIC_);
     std::unique_ptr<llvm::TargetMachine> targetMachine(
         target->createTargetMachine(targetTriple, "generic", "", opt, RM));
 
