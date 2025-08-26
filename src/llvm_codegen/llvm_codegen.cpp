@@ -72,6 +72,22 @@ llvm::Value *CodeGenVisitor::visitBinaryExpr(Binary &expr) {
     }
 }
 
+llvm::Value *CodeGenVisitor::visitLogicalExpr(Logical &expr) {
+    auto *L = expr.left->accept(*this);
+    auto *R = expr.right->accept(*this);
+
+    switch (expr.op.type) {
+    case TokenType::AND:
+        return builder.CreateAnd(L, R, "andtmp");
+
+    case TokenType::OR:
+        return builder.CreateOr(L, R, "ortmp");
+
+    default:
+        throw std::runtime_error("Unsupported logical operator");
+    }
+}
+
 llvm::Value *CodeGenVisitor::visitUnaryExpr(Unary &expr) {
     auto *R = expr.right->accept(*this);
     switch (expr.op.type) {

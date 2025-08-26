@@ -171,10 +171,36 @@ class Parser {
         return expr;
     }
 
+    UniqueExpr logic_and() {
+        // logic_and      → equality ( "and" equality )* ;
+        UniqueExpr res = equality();
+
+        while (match(AND)) {
+            Token op = previousToken;
+            UniqueExpr right = equality();
+            res = std::make_unique<Logical>(std::move(res), op, std::move(right));
+        }
+
+        return res;
+    }
+
+    UniqueExpr logic_or() {
+        // logic_or       → logic_and ( "or" logic_and )* ;
+        UniqueExpr res = logic_and();
+
+        while (match(OR)) {
+            Token op = previousToken;
+            UniqueExpr right = logic_and();
+            res = std::make_unique<Logical>(std::move(res), op, std::move(right));
+        }
+
+        return res;
+    }
+
     UniqueExpr assignment() {
         // assignment     ::= ( call "." )? IDENTIFIER "=" assignment
         //                |   logic_or ;
-        UniqueExpr expr = equality();
+        UniqueExpr expr = logic_or();
 
         if (match(EQUAL)) {
             Token equals = previousToken;

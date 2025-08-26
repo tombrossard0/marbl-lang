@@ -74,6 +74,7 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
 
     llvm::Value *visitLiteralExpr(Literal &expr) override;
     llvm::Value *visitBinaryExpr(Binary &expr) override;
+    llvm::Value *visitLogicalExpr(Logical &expr) override;
     llvm::Value *visitUnaryExpr(Unary &expr) override;
     llvm::Value *visitGroupingExpr(Grouping &expr) override;
     llvm::Value *visitVariableExpr(Variable &expr) override;

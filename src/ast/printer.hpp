@@ -8,6 +8,7 @@ class AstPrinter : public ExprVisitor<void>, StmtVisitor<void> {
 
   private:
     void visitBinaryExpr(Binary &expr) override;
+    void visitLogicalExpr(Logical &expr) override;
     void visitGroupingExpr(Grouping &expr) override;
     void visitLiteralExpr(Literal &expr) override;
     void visitUnaryExpr(Unary &expr) override;

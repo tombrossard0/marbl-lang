@@ -18,6 +18,18 @@ void AstPrinter::visitBinaryExpr(Binary &expr) {
     std::cout << " )";
 }
 
+void AstPrinter::visitLogicalExpr(Logical &expr) {
+    std::cout << "( ";
+
+    expr.left->accept(*this);
+    std::cout << " ";
+
+    std::cout << expr.op.lexeme << " ";
+
+    expr.right->accept(*this);
+    std::cout << " )";
+}
+
 void AstPrinter::visitGroupingExpr(Grouping &expr) {
     std::cout << "( group ";
     expr.expression->accept(*this);

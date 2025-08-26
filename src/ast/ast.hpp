@@ -31,6 +31,7 @@ class Print;
 class Let;
 class Block;
 class If;
+class Logical;
 
 #define BINARY_FIELDS(X, Y) X(UniqueExpr, left) X(Token, op) Y(UniqueExpr, right)
 #define GROUPING_FIELDS(X, Y) Y(UniqueExpr, expression)
@@ -38,6 +39,7 @@ class If;
 #define UNARY_FIELDS(X, Y) X(Token, op) Y(UniqueExpr, right)
 #define VARIABLE_FIELDS(X, Y) Y(Token, name)
 #define ASSIGN_FIELDS(X, Y) X(Token, name) Y(UniqueExpr, value)
+#define LOGICAL_FIELDS(X, Y) X(UniqueExpr, left) X(Token, op) Y(UniqueExpr, right)
 
 #define EXPRESSION_FIELDS(X, Y) Y(UniqueExpr, expression)
 #define PRINT_FIELDS(X, Y) Y(UniqueExpr, expression)
@@ -51,7 +53,8 @@ class If;
     X(Literal, LITERAL_FIELDS, Expr)                                                                         \
     X(Unary, UNARY_FIELDS, Expr)                                                                             \
     X(Variable, VARIABLE_FIELDS, Expr)                                                                       \
-    X(Assign, ASSIGN_FIELDS, Expr)
+    X(Assign, ASSIGN_FIELDS, Expr)                                                                           \
+    X(Logical, LOGICAL_FIELDS, Expr)
 
 #define STMT_AST_NODES(X)                                                                                    \
     X(Expression, EXPRESSION_FIELDS, Stmt)                                                                   \
