@@ -26,6 +26,7 @@ class Unary;
 class Variable;
 class Assign;
 class Logical;
+class Call;
 
 class Expression;
 class Print;
@@ -33,6 +34,7 @@ class Let;
 class Block;
 class If;
 class While;
+class Function;
 
 #define BINARY_FIELDS(X, Y) X(UniqueExpr, left) X(Token, op) Y(UniqueExpr, right)
 #define GROUPING_FIELDS(X, Y) Y(UniqueExpr, expression)
@@ -41,6 +43,7 @@ class While;
 #define VARIABLE_FIELDS(X, Y) Y(Token, name)
 #define ASSIGN_FIELDS(X, Y) X(Token, name) Y(UniqueExpr, value)
 #define LOGICAL_FIELDS(X, Y) X(UniqueExpr, left) X(Token, op) Y(UniqueExpr, right)
+#define CALL_FIELDS(X, Y) X(UniqueExpr, callee) X(Token, paren) Y(std::vector<UniqueExpr>, arguments)
 
 #define EXPRESSION_FIELDS(X, Y) Y(UniqueExpr, expression)
 #define PRINT_FIELDS(X, Y) Y(UniqueExpr, expression)
@@ -48,6 +51,7 @@ class While;
 #define BLOCK_FIELDS(X, Y) Y(std::vector<UniqueStmt>, statements)
 #define IF_FIELDS(X, Y) X(UniqueExpr, condition) X(UniqueStmt, thenBranch) Y(UniqueStmt, elseBranch)
 #define WHILE_FIELDS(X, Y) X(UniqueExpr, condition) Y(UniqueStmt, body)
+#define FUNCTION_FIELDS(X, Y) X(Token, name) X(std::vector<Token>, params) Y(std::vector<UniqueStmt>, body)
 
 #define EXPR_AST_NODES(X)                                                                                    \
     X(Binary, BINARY_FIELDS, Expr)                                                                           \
@@ -56,7 +60,8 @@ class While;
     X(Unary, UNARY_FIELDS, Expr)                                                                             \
     X(Variable, VARIABLE_FIELDS, Expr)                                                                       \
     X(Assign, ASSIGN_FIELDS, Expr)                                                                           \
-    X(Logical, LOGICAL_FIELDS, Expr)
+    X(Logical, LOGICAL_FIELDS, Expr)                                                                         \
+    X(Call, CALL_FIELDS, Expr)
 
 #define STMT_AST_NODES(X)                                                                                    \
     X(Expression, EXPRESSION_FIELDS, Stmt)                                                                   \
@@ -64,7 +69,8 @@ class While;
     X(Let, LET_FIELDS, Stmt)                                                                                 \
     X(Block, BLOCK_FIELDS, Stmt)                                                                             \
     X(If, IF_FIELDS, Stmt)                                                                                   \
-    X(While, WHILE_FIELDS, Stmt)
+    X(While, WHILE_FIELDS, Stmt)                                                                             \
+    X(Function, FUNCTION_FIELDS, Stmt)
 
 // ======= Visitor Template =======
 template <typename T> class ExprVisitor {

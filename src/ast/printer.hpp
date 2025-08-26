@@ -14,6 +14,7 @@ class AstPrinter : public ExprVisitor<void>, StmtVisitor<void> {
     void visitUnaryExpr(Unary &expr) override;
     void visitVariableExpr(Variable &expr) override;
     void visitAssignExpr(Assign &expr) override;
+    void visitCallExpr(Call &expr) override;
 
     void visitExpressionStmt(Expression &stmt) override;
     void visitPrintStmt(Print &stmt) override;
@@ -21,4 +22,5 @@ class AstPrinter : public ExprVisitor<void>, StmtVisitor<void> {
     void visitBlockStmt(Block &stmt) override;
     void visitIfStmt(If &stmt) override;
     void visitWhileStmt(While &stmt) override;
+    void visitFunctionStmt(Function &stmt) override;
 };

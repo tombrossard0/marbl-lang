@@ -42,30 +42,30 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
     llvm::Module module;
     llvm::IRBuilder<> builder;
 
-    llvm::Function *strlenFunc;
-    llvm::Function *mallocFunc;
-    llvm::Function *memcpyFunc;
+    // llvm::Function *strlenFunc;
+    // llvm::Function *mallocFunc;
+    // llvm::Function *memcpyFunc;
 
   public:
     CodeGenVisitor(const std::string &moduleName)
         : env(std::make_unique<Environment>()), module(moduleName, context), builder(context) {
         // Declare external C functions
-        strlenFunc = llvm::Function::Create(
-            llvm::FunctionType::get(builder.getInt32Ty(), {builder.getIntPtrTy(module.getDataLayout(), 8)},
-                                    false),
-            llvm::Function::ExternalLinkage, "strlen", module);
+        // strlenFunc = llvm::Function::Create(
+        //     llvm::FunctionType::get(builder.getInt32Ty(), {builder.getIntPtrTy(module.getDataLayout(), 8)},
+        //                             false),
+        //     llvm::Function::ExternalLinkage, "strlen", module);
 
-        mallocFunc =
-            llvm::Function::Create(llvm::FunctionType::get(builder.getIntPtrTy(module.getDataLayout(), 8),
-                                                           {builder.getInt32Ty()}, false),
-                                   llvm::Function::ExternalLinkage, "malloc", module);
+        // mallocFunc =
+        //     llvm::Function::Create(llvm::FunctionType::get(builder.getIntPtrTy(module.getDataLayout(), 8),
+        //                                                    {builder.getInt32Ty()}, false),
+        //                            llvm::Function::ExternalLinkage, "malloc", module);
 
-        memcpyFunc = llvm::Function::Create(
-            llvm::FunctionType::get(builder.getIntPtrTy(module.getDataLayout(), 8),
-                                    {builder.getIntPtrTy(module.getDataLayout(), 8),
-                                     builder.getIntPtrTy(module.getDataLayout(), 8), builder.getInt32Ty()},
-                                    false),
-            llvm::Function::ExternalLinkage, "memcpy", module);
+        // memcpyFunc = llvm::Function::Create(
+        //     llvm::FunctionType::get(builder.getIntPtrTy(module.getDataLayout(), 8),
+        //                             {builder.getIntPtrTy(module.getDataLayout(), 8),
+        //                              builder.getIntPtrTy(module.getDataLayout(), 8), builder.getInt32Ty()},
+        //                             false),
+        //     llvm::Function::ExternalLinkage, "memcpy", module);
     }
 
     llvm::Value *convertToi1(llvm::Value *value);
@@ -80,6 +80,7 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
     llvm::Value *visitGroupingExpr(Grouping &expr) override;
     llvm::Value *visitVariableExpr(Variable &expr) override;
     llvm::Value *visitAssignExpr(Assign &expr) override;
+    llvm::Value *visitCallExpr(Call &expr) override;
 
     void visitExpressionStmt(Expression &stmt) override;
     void visitPrintStmt(Print &stmt) override;
@@ -87,4 +88,5 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
     void visitWhileStmt(While &stmt) override;
     void visitLetStmt(Let &stmt) override;
     void visitBlockStmt(Block &stmt) override;
+    void visitFunctionStmt(Function &stmt) override;
 };

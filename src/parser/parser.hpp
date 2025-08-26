@@ -97,9 +97,26 @@ class Parser {
         throw ParserException(peek(), "Expect expression.");
     }
 
+    UniqueExpr finishCall(UniqueExpr callee) {
+        std::vector<UniqueExpr> args{};
+        if (!check(RIGHT_PAREN)) {
+            do { args.push_back(expression()); } while (match(COMMA));
+        }
+
+        Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+        return std::make_unique<Call>(std::move(callee), paren, std::move(args));
+    }
+
     UniqueExpr call() {
         // call           ::= primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
         UniqueExpr expr = primary();
+
+        while (true) {
+            if (match(LEFT_PAREN)) {
+                expr = finishCall(std::move(expr));
+            } else
+                break;
+        }
 
         return expr;
     }
@@ -294,12 +311,30 @@ class Parser {
         return std::make_unique<Let>(name, std::move(initializer));
     }
 
+    UniqueStmt function(std::string kind) {
+        Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+        consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+
+        std::vector<Token> params{};
+
+        if (!check(RIGHT_PAREN)) {
+            do { params.push_back(consume(IDENTIFIER, "Expect parameter name.")); } while (match(COMMA));
+        }
+
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+        consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+
+        std::vector<UniqueStmt> body = block();
+        return std::make_unique<Function>(name, params, std::move(body));
+    }
+
     UniqueStmt declaration() {
         // declaration     ::= classDecl
         //                 |   funDecl
         //                 |   letDecl
         //                 |   statement ;
         try {
+            if (match(FUN)) return function("function");
             if (match(LET)) return letDeclaration();
             return statement();
         } catch (ParserException err) {

@@ -100,3 +100,21 @@ void AstPrinter::visitBlockStmt(Block &stmt) {
     }
     std::cout << "}";
 }
+
+void AstPrinter::visitCallExpr(Call &expr) {
+    expr.callee->accept(*this);
+
+    std::cout << "(";
+    for (auto &arg : expr.arguments) { arg->accept(*this); }
+    std::cout << ")";
+}
+
+void AstPrinter::visitFunctionStmt(Function &stmt) {
+    std::cout << "fun " << stmt.name.lexeme << "(";
+    for (auto &param : stmt.params) { std::cout << param.lexeme << ", "; }
+    std::cout << ") {";
+
+    for (auto &fn_stmt : stmt.body) { fn_stmt->accept(*this); }
+
+    std::cout << "}";
+}

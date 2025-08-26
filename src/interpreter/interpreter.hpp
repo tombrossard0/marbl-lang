@@ -16,6 +16,7 @@ class Interpreter : public ExprVisitor<Object>, StmtVisitor<void> {
     Object visitUnaryExpr(Unary &expr) override;
     Object visitVariableExpr(Variable &expr) override;
     Object visitAssignExpr(Assign &expr) override;
+    Object visitCallExpr(Call &expr) override;
 
     void visitExpressionStmt(Expression &stmt) override;
     void visitPrintStmt(Print &stmt) override;
@@ -23,4 +24,5 @@ class Interpreter : public ExprVisitor<Object>, StmtVisitor<void> {
     void visitBlockStmt(Block &stmt) override;
     void visitIfStmt(If &stmt) override;
     void visitWhileStmt(While &stmt) override;
+    void visitFunctionStmt(Function &stmt) override;
 };

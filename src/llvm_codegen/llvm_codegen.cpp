@@ -131,6 +131,25 @@ llvm::Value *CodeGenVisitor::visitAssignExpr(Assign &expr) {
     return value;
 }
 
+// class Callable {
+//   public:
+//     llvm::Value *call(CodeGenVisitor *visitor, std::vector<llvm::Value *> args);
+
+//     int arity;
+// };
+
+llvm::Value *CodeGenVisitor::visitCallExpr(Call &expr) {
+    // llvm::Value *callee = expr.callee->accept(*this);
+
+    // std::vector<llvm::Value *> args{};
+    // for (UniqueExpr &arg : expr.arguments) { args.push_back(arg->accept(*this)); }
+
+    // Callable function = static_cast<Callable>(callee);
+    // return function.call(this, arguments);
+
+    return nullptr;
+}
+
 void CodeGenVisitor::visitExpressionStmt(Expression &stmt) {
     auto *res = stmt.expression->accept(*this);
 }
@@ -232,6 +251,10 @@ void CodeGenVisitor::visitBlockStmt(Block &stmt) {
     for (auto &subStmt : stmt.statements) { subStmt->accept(*this); }
     env = std::move(previousEnv);
     std::cout << "Leave block\n";
+}
+
+void CodeGenVisitor::visitFunctionStmt(Function &stmt) {
+    // TODO
 }
 
 // === Entry point: wraps expression in function main ===
