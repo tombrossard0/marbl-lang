@@ -43,6 +43,30 @@ llvm::Value *CodeGenVisitor::visitBinaryExpr(Binary &expr) {
         if (L->getType()->isDoubleTy()) return builder.CreateFDiv(L, R, "divtmp");
         return builder.CreateSDiv(L, R, "divtmp");
 
+    case TokenType::LESS:
+        if (L->getType()->isDoubleTy()) return builder.CreateFCmpOLT(L, R, "lttmp");
+        return builder.CreateICmpSLT(L, R, "lttmp");
+
+    case TokenType::LESS_EQUAL:
+        if (L->getType()->isDoubleTy()) return builder.CreateFCmpOLE(L, R, "letmp");
+        return builder.CreateICmpSLE(L, R, "letmp");
+
+    case TokenType::GREATER:
+        if (L->getType()->isDoubleTy()) return builder.CreateFCmpOGT(L, R, "gttmp");
+        return builder.CreateICmpSGT(L, R, "gttmp");
+
+    case TokenType::GREATER_EQUAL:
+        if (L->getType()->isDoubleTy()) return builder.CreateFCmpOGE(L, R, "getmp");
+        return builder.CreateICmpSGE(L, R, "gttmp");
+
+    case TokenType::EQUAL_EQUAL:
+        if (L->getType()->isDoubleTy()) return builder.CreateFCmpOEQ(L, R, "eqtmp");
+        return builder.CreateICmpEQ(L, R, "eqtmp");
+
+    case TokenType::BANG_EQUAL:
+        if (L->getType()->isDoubleTy()) return builder.CreateFCmpONE(L, R, "netmp");
+        return builder.CreateICmpNE(L, R, "netmp");
+
     default:
         throw std::runtime_error("Unsupported binary operator");
     }
@@ -54,8 +78,10 @@ llvm::Value *CodeGenVisitor::visitUnaryExpr(Unary &expr) {
     case TokenType::MINUS:
         if (R->getType()->isDoubleTy()) return builder.CreateFNeg(R, "negtmp");
         return builder.CreateNeg(R, "negtmp");
+
     case TokenType::BANG:
         return builder.CreateNot(R, "nottmp");
+
     default:
         throw std::runtime_error("Unsupported unary operator");
     }
