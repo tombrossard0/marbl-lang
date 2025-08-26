@@ -68,6 +68,7 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
             llvm::Function::ExternalLinkage, "memcpy", module);
     }
 
+    llvm::Value *convertToi1(llvm::Value *value);
     llvm::Module &getModule() { return module; }
 
     void generate(std::vector<UniqueStmt> &statements);

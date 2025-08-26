@@ -1,5 +1,17 @@
 #include "llvm_codegen.hpp"
 
+llvm::Value *CodeGenVisitor::convertToi1(llvm::Value *value) {
+    if (value->getType()->isIntegerTy(32)) {
+        return builder.CreateICmpNE(value, llvm::ConstantInt::get(context, llvm::APInt(32, 0)), "ifcond");
+    } else if (value->getType()->isDoubleTy()) {
+        return builder.CreateFCmpONE(value, llvm::ConstantFP::get(context, llvm::APFloat(0.0)), "ifcond");
+    } else if (!value->getType()->isIntegerTy(1)) {
+        throw std::runtime_error("Invalid if condition type");
+    }
+
+    return value;
+}
+
 llvm::Value *CodeGenVisitor::visitLiteralExpr(Literal &expr) {
     return std::visit(
         [&](auto &&val) -> llvm::Value * {
@@ -73,15 +85,15 @@ llvm::Value *CodeGenVisitor::visitBinaryExpr(Binary &expr) {
 }
 
 llvm::Value *CodeGenVisitor::visitLogicalExpr(Logical &expr) {
-    auto *L = expr.left->accept(*this);
-    auto *R = expr.right->accept(*this);
+    auto *L = convertToi1(expr.left->accept(*this));
+    auto *R = convertToi1(expr.right->accept(*this));
 
     switch (expr.op.type) {
     case TokenType::AND:
-        return builder.CreateAnd(L, R, "andtmp");
+        return builder.CreateLogicalAnd(L, R, "andtmp");
 
     case TokenType::OR:
-        return builder.CreateOr(L, R, "ortmp");
+        return builder.CreateLogicalOr(L, R, "ortmp");
 
     default:
         throw std::runtime_error("Unsupported logical operator");
@@ -147,15 +159,7 @@ void CodeGenVisitor::visitIfStmt(If &stmt) {
     llvm::Value *condValue = stmt.condition->accept(*this);
 
     // Convert to i1 (bool) if possible
-    if (condValue->getType()->isIntegerTy(32)) {
-        condValue =
-            builder.CreateICmpNE(condValue, llvm::ConstantInt::get(context, llvm::APInt(32, 0)), "ifcond");
-    } else if (condValue->getType()->isDoubleTy()) {
-        condValue =
-            builder.CreateFCmpONE(condValue, llvm::ConstantFP::get(context, llvm::APFloat(0.0)), "ifcond");
-    } else if (!condValue->getType()->isIntegerTy(1)) {
-        throw std::runtime_error("Invalid if condition type");
-    }
+    condValue = convertToi1(condValue);
 
     llvm::Function *function = builder.GetInsertBlock()->getParent();
 
