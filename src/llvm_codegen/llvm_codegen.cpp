@@ -229,7 +229,7 @@ void CodeGenVisitor::visitWhileStmt(While &stmt) {
     // If true : body, else : end
     builder.CreateCondBr(condValue, bodyBB, endBB);
 
-    // Emit "body"
+    // Emit body
     builder.SetInsertPoint(bodyBB);
     stmt.body->accept(*this);
 
@@ -245,24 +245,69 @@ void CodeGenVisitor::visitLetStmt(Let &stmt) {
 }
 
 void CodeGenVisitor::visitBlockStmt(Block &stmt) {
-    std::cout << "Enter block\n";
     std::unique_ptr<Environment> previousEnv = std::move(env);
     env = std::make_unique<Environment>(previousEnv.get());
     for (auto &subStmt : stmt.statements) { subStmt->accept(*this); }
     env = std::move(previousEnv);
-    std::cout << "Leave block\n";
 }
 
 void CodeGenVisitor::visitFunctionStmt(Function &stmt) {
-    // TODO
+    // Collect args types (for the moment, takes only int32)
+    std::vector<llvm::Type *> argTypes;
+    for (auto &param : stmt.params) { argTypes.push_back(builder.getInt32Ty()); }
+
+    // Create function type (for the moment, returns only void)
+    llvm::FunctionType *funcType = llvm::FunctionType::get(builder.getVoidTy(), argTypes, false);
+
+    // Create the function inside the module (by default, function is public)
+    llvm::Function *function =
+        llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, stmt.name.lexeme, module);
+
+    // Name the function args
+    unsigned idx = 0;
+    for (auto &arg : function->args()) { arg.setName(stmt.params[idx++].lexeme); }
+
+    // Save current insertion point
+    llvm::BasicBlock *savedBB = builder.GetInsertBlock();
+    llvm::Function *savedFn = savedBB ? savedBB->getParent() : nullptr;
+
+    // Create entry block
+    llvm::BasicBlock *entryBB = llvm::BasicBlock::Create(context, "entry", function);
+    builder.SetInsertPoint(entryBB);
+
+    // New env scope for locals
+    std::unique_ptr<Environment> previousEnv = std::move(env);
+    env = std::make_unique<Environment>(previousEnv.get());
+
+    // Allocate space on the stack for each param and store them
+    for (auto &arg : function->args()) {
+        llvm::AllocaInst *alloca = builder.CreateAlloca(builder.getInt32Ty(), nullptr, arg.getName());
+        builder.CreateStore(&arg, alloca);
+        env->declare(*this, std::string(arg.getName()), alloca);
+    }
+
+    // Emit body
+    for (auto &bodyStmt : stmt.body) { bodyStmt->accept(*this); }
+
+    // If the body didn't return, insert default return
+    if (!builder.GetInsertBlock()->getTerminator()) { builder.CreateRetVoid(); }
+
+    // End scope for locals
+    env = std::move(previousEnv);
+
+    if (savedBB) {
+        builder.SetInsertPoint(savedBB);
+    } else {
+        builder.ClearInsertionPoint();
+    }
 }
 
 // === Entry point: wraps expression in function main ===
 void CodeGenVisitor::generate(std::vector<UniqueStmt> &statements) {
     auto *funcType = llvm::FunctionType::get(builder.getInt32Ty(), false);
     auto *function = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, "main", module);
-    auto *bb = llvm::BasicBlock::Create(context, "entry", function);
-    builder.SetInsertPoint(bb);
+    auto *entryBB = llvm::BasicBlock::Create(context, "entry", function);
+    builder.SetInsertPoint(entryBB);
 
     for (auto &statement : statements) { statement->accept(*this); }
 
