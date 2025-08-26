@@ -258,6 +258,15 @@ class Parser {
         return std::make_unique<If>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
     }
 
+    UniqueStmt whileStatement() {
+        consume(LEFT_PAREN, "Expect '(' after 'while'.");
+        UniqueExpr condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after while condition.");
+
+        UniqueStmt body = statement();
+        return std::make_unique<While>(std::move(condition), std::move(body));
+    }
+
     UniqueStmt statement() {
         // statement       ::= exprStmt
         //                 |   forStmt
@@ -267,6 +276,7 @@ class Parser {
         //                 |   whileStmt
         //                 |   block ;
         if (match(PRINT)) return printStatement();
+        if (match(WHILE)) return whileStatement();
         if (match(LEFT_BRACE)) return std::make_unique<Block>(block());
         if (match(IF)) return ifStatement();
 

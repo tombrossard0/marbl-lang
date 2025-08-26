@@ -79,6 +79,13 @@ void AstPrinter::visitIfStmt(If &stmt) {
     }
 }
 
+void AstPrinter::visitWhileStmt(While &stmt) {
+    std::cout << "while (";
+    stmt.condition->accept(*this);
+    std::cout << ") ";
+    stmt.body->accept(*this);
+}
+
 void AstPrinter::visitLetStmt(Let &stmt) {
     std::cout << "let " << stmt.name.literal << " = ";
     stmt.initializer->accept(*this);

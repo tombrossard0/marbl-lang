@@ -193,6 +193,33 @@ void CodeGenVisitor::visitIfStmt(If &stmt) {
     builder.SetInsertPoint(endBB);
 }
 
+void CodeGenVisitor::visitWhileStmt(While &stmt) {
+    llvm::Function *function = builder.GetInsertBlock()->getParent();
+
+    // Create blocks with parent function
+    llvm::BasicBlock *condBB = llvm::BasicBlock::Create(context, "whilecond", function);
+    llvm::BasicBlock *bodyBB = llvm::BasicBlock::Create(context, "whilebody", function);
+    llvm::BasicBlock *endBB = llvm::BasicBlock::Create(context, "whileend", function);
+
+    builder.CreateBr(condBB); // Jump to conditional branch
+
+    // Conditional block
+    builder.SetInsertPoint(condBB);
+    llvm::Value *condValue = convertToi1(stmt.condition->accept(*this));
+
+    // If true : body, else : end
+    builder.CreateCondBr(condValue, bodyBB, endBB);
+
+    // Emit "body"
+    builder.SetInsertPoint(bodyBB);
+    stmt.body->accept(*this);
+
+    if (!builder.GetInsertBlock()->getTerminator()) builder.CreateBr(condBB);
+
+    // End block
+    builder.SetInsertPoint(endBB);
+}
+
 void CodeGenVisitor::visitLetStmt(Let &stmt) {
     llvm::Value *value = stmt.initializer->accept(*this);
     env->declare(*this, stmt.name.lexeme, value);
