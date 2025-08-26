@@ -30,6 +30,7 @@ class Expression;
 class Print;
 class Let;
 class Block;
+class If;
 
 #define BINARY_FIELDS(X, Y) X(UniqueExpr, left) X(Token, op) Y(UniqueExpr, right)
 #define GROUPING_FIELDS(X, Y) Y(UniqueExpr, expression)
@@ -42,6 +43,7 @@ class Block;
 #define PRINT_FIELDS(X, Y) Y(UniqueExpr, expression)
 #define LET_FIELDS(X, Y) X(Token, name) Y(UniqueExpr, initializer)
 #define BLOCK_FIELDS(X, Y) Y(std::vector<UniqueStmt>, statements)
+#define IF_FIELDS(X, Y) X(UniqueExpr, condition) X(UniqueStmt, thenBranch) Y(UniqueStmt, elseBranch)
 
 #define EXPR_AST_NODES(X)                                                                                    \
     X(Binary, BINARY_FIELDS, Expr)                                                                           \
@@ -55,7 +57,8 @@ class Block;
     X(Expression, EXPRESSION_FIELDS, Stmt)                                                                   \
     X(Print, PRINT_FIELDS, Stmt)                                                                             \
     X(Let, LET_FIELDS, Stmt)                                                                                 \
-    X(Block, BLOCK_FIELDS, Stmt)
+    X(Block, BLOCK_FIELDS, Stmt)                                                                             \
+    X(If, IF_FIELDS, Stmt)
 
 // ======= Visitor Template =======
 template <typename T> class ExprVisitor {

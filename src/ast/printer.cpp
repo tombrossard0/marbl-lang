@@ -55,6 +55,18 @@ void AstPrinter::visitPrintStmt(Print &stmt) {
     std::cout << ");";
 }
 
+void AstPrinter::visitIfStmt(If &stmt) {
+    std::cout << "if (";
+    stmt.condition->accept(*this);
+    std::cout << ") ";
+    stmt.thenBranch->accept(*this);
+
+    if (stmt.elseBranch) {
+        std::cout << "else ";
+        stmt.elseBranch->accept(*this);
+    }
+}
+
 void AstPrinter::visitLetStmt(Let &stmt) {
     std::cout << "let " << stmt.name.literal << " = ";
     stmt.initializer->accept(*this);

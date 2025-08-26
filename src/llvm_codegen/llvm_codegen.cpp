@@ -101,6 +101,52 @@ void CodeGenVisitor::visitPrintStmt(Print &stmt) {
     builder.CreateCall(printfFunc, {formatStr, res});
 }
 
+void CodeGenVisitor::visitIfStmt(If &stmt) {
+    llvm::Value *condValue = stmt.condition->accept(*this);
+
+    // Convert to i1 (bool) if possible
+    if (condValue->getType()->isIntegerTy(32)) {
+        condValue =
+            builder.CreateICmpNE(condValue, llvm::ConstantInt::get(context, llvm::APInt(32, 0)), "ifcond");
+    } else if (condValue->getType()->isDoubleTy()) {
+        condValue =
+            builder.CreateFCmpONE(condValue, llvm::ConstantFP::get(context, llvm::APFloat(0.0)), "ifcond");
+    } else if (!condValue->getType()->isIntegerTy(1)) {
+        throw std::runtime_error("Invalid if condition type");
+    }
+
+    llvm::Function *function = builder.GetInsertBlock()->getParent();
+
+    // Create blocks with parent function
+    llvm::BasicBlock *thenBB = llvm::BasicBlock::Create(context, "then", function);
+    llvm::BasicBlock *elseBB =
+        stmt.elseBranch ? llvm::BasicBlock::Create(context, "else", function) : nullptr;
+    llvm::BasicBlock *endBB = llvm::BasicBlock::Create(context, "end", function);
+
+    // Conditional branch
+    if (elseBB)
+        builder.CreateCondBr(condValue, thenBB, elseBB);
+    else
+        builder.CreateCondBr(condValue, thenBB, endBB);
+
+    // Emit "then"
+    builder.SetInsertPoint(thenBB);
+    stmt.thenBranch->accept(*this);
+    if (!builder.GetInsertBlock()->getTerminator())
+        builder.CreateBr(
+            endBB); // If the block does not already end with a terminator, insert a branch to endBB
+
+    // Emit "else"
+    if (stmt.elseBranch) {
+        builder.SetInsertPoint(elseBB);
+        stmt.elseBranch->accept(*this);
+        if (!builder.GetInsertBlock()->getTerminator()) builder.CreateBr(endBB); // Idem
+    }
+
+    // End block
+    builder.SetInsertPoint(endBB);
+}
+
 void CodeGenVisitor::visitLetStmt(Let &stmt) {
     llvm::Value *value = stmt.initializer->accept(*this);
     env->declare(*this, stmt.name.lexeme, value);

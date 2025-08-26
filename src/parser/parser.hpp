@@ -220,6 +220,18 @@ class Parser {
         return std::move(statements);
     }
 
+    UniqueStmt ifStatement() {
+        consume(LEFT_PAREN, "Expect '(' after 'if'.");
+        UniqueExpr condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after if condition.");
+
+        UniqueStmt thenBranch = statement();
+        UniqueStmt elseBranch = nullptr;
+        if (match(ELSE)) elseBranch = statement();
+
+        return std::make_unique<If>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
+    }
+
     UniqueStmt statement() {
         // statement       ::= exprStmt
         //                 |   forStmt
@@ -230,6 +242,7 @@ class Parser {
         //                 |   block ;
         if (match(PRINT)) return printStatement();
         if (match(LEFT_BRACE)) return std::make_unique<Block>(block());
+        if (match(IF)) return ifStatement();
 
         return expressionStatement();
     }

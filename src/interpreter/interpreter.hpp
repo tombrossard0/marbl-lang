@@ -20,4 +20,5 @@ class Interpreter : public ExprVisitor<Object>, StmtVisitor<void> {
     void visitPrintStmt(Print &stmt) override;
     void visitLetStmt(Let &stmt) override;
     void visitBlockStmt(Block &stmt) override;
+    void visitIfStmt(If &stmt) override;
 };
