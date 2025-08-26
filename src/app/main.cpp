@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
         return EX_NOINPUT;
     }
 
-    Parser parser{inputFile};
+    Parser parser{inputFile, std::string(argv[1])};
     std::vector<UniqueStmt> statements = parser.parse();
 
     inputFile.close();

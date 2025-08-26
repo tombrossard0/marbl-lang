@@ -17,7 +17,7 @@ int Marbl::runFile(char *filepath) {
         return EX_NOINPUT;
     }
 
-    Parser parser{inputFile};
+    Parser parser{inputFile, std::string(filepath)};
     std::vector<UniqueStmt> statements = parser.parse();
 
     for (auto &statement : statements) {

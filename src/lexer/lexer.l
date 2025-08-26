@@ -35,6 +35,7 @@ std::string unescape(const std::string& str) {
     Lexer::currentToken.type = TYPE;\
     Lexer::currentToken.lexeme = yytext;\
     Lexer::currentToken.literal = LITERAL;\
+    Lexer::currentToken.filename = Lexer::activeLexer->getFilename();\
     Lexer::currentToken.line = current_line;\
     Lexer::currentToken.col = current_col;\
     current_col += yyleng;\
@@ -52,6 +53,8 @@ NUMBER      ({DIGIT}+\.?{DIGIT}*|{DIGIT}*\.{DIGIT}+)
 STRING      \"([^"]|\\.)+\"
 
 %%
+
+\/\/.*$                     ;
 
 print                       { REPLACE(TokenType::PRINT, yytext); }
 

@@ -8,12 +8,12 @@
 class ParserException : public std::exception {
   public:
     ParserException(Token tok, const std::string &msg) : tok(tok), msg(msg) {
-        std::cerr << "Error with token: " << tok << std::endl;
         if (tok.type == TokenType::T_EOF) {
-            report(tok.line, "at end", msg);
+            report(tok, "at end", msg);
         } else {
-            report(tok.line, "at '" + tok.lexeme + "'", msg);
+            report(tok, "at '" + tok.lexeme + "'", msg);
         }
+        std::cerr << "Error with token: " << tok << std::endl;
     }
     ~ParserException() {};
 
@@ -23,7 +23,8 @@ class ParserException : public std::exception {
     const std::string msg;
     Token tok;
 
-    void report(const int line, const std::string &at, const std::string &msg) {
-        std::cerr << "line " << line << " " << at << ". " << msg << std::endl;
+    void report(const Token tok, const std::string &at, const std::string &msg) {
+        std::cerr << tok.filename << ":" << tok.line << ":" << tok.col << " " << at << ": error: " << msg
+                  << std::endl;
     }
 };

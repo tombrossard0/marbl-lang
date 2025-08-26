@@ -4,6 +4,6 @@ rm build/output.o build/program.out
 ./build.sh
 
 ./build/marbl_app examples/hello.mrbl
-clang++ build/output.o -o build/program.out
+g++ build/output.o -o build/program.out
 ./build/program.out
 echo "exit code: $?"

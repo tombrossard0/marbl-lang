@@ -12,7 +12,7 @@ class Parser {
   public:
     Lexer lexer;
 
-    Parser(std::istream &input) : lexer(input) {}
+    Parser(std::istream &input, std::string input_name) : lexer(input, input_name) {}
 
     std::vector<UniqueStmt> parse() {
         std::vector<UniqueStmt> statements;
