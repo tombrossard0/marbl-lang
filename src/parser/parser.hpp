@@ -97,25 +97,31 @@ class Parser {
         throw ParserException(peek(), "Expect expression.");
     }
 
-    UniqueExpr finishCall(UniqueExpr callee) {
-        std::vector<UniqueExpr> args{};
-        if (!check(RIGHT_PAREN)) {
-            do { args.push_back(expression()); } while (match(COMMA));
-        }
+    // UniqueExpr finishCall(UniqueExpr callee) {
+    //     std::vector<UniqueExpr> args{};
+    //     if (!check(RIGHT_PAREN)) {
+    //         do { args.push_back(expression()); } while (match(COMMA));
+    //     }
 
-        Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
-        return std::make_unique<Call>(std::move(callee), paren, std::move(args));
-    }
+    //     Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+    //     return std::make_unique<Call>(std::move(callee), paren, std::move(args));
+    // }
 
     UniqueExpr call() {
         // call           ::= primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
         UniqueExpr expr = primary();
 
-        while (true) {
-            if (match(LEFT_PAREN)) {
-                expr = finishCall(std::move(expr));
-            } else
-                break;
+        // while (true) {
+        //     if (match(LEFT_PAREN)) {
+        //         expr = finishCall(std::move(expr));
+        //     } else
+        //         break;
+        // }
+
+        if (match(LEFT_PAREN)) {
+            std::vector<UniqueExpr> args{};
+            Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+            return std::make_unique<Call>(std::move(expr), paren, std::move(args));
         }
 
         return expr;

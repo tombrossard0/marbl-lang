@@ -120,9 +120,12 @@ llvm::Value *CodeGenVisitor::visitGroupingExpr(Grouping &expr) {
 }
 
 llvm::Value *CodeGenVisitor::visitVariableExpr(Variable &expr) {
-    llvm::Value *alloca = env->get(expr.name.lexeme);
-    auto *ptrTy = llvm::cast<llvm::AllocaInst>(alloca)->getAllocatedType();
-    return builder.CreateLoad(ptrTy, alloca, expr.name.lexeme);
+    llvm::Value *val = env->get(expr.name.lexeme);
+
+    if (auto *func = llvm::dyn_cast<llvm::Function>(val)) { return func; }
+
+    auto *ptrTy = llvm::cast<llvm::AllocaInst>(val)->getAllocatedType();
+    return builder.CreateLoad(ptrTy, val, expr.name.lexeme);
 }
 
 llvm::Value *CodeGenVisitor::visitAssignExpr(Assign &expr) {
@@ -131,23 +134,16 @@ llvm::Value *CodeGenVisitor::visitAssignExpr(Assign &expr) {
     return value;
 }
 
-// class Callable {
-//   public:
-//     llvm::Value *call(CodeGenVisitor *visitor, std::vector<llvm::Value *> args);
-
-//     int arity;
-// };
-
 llvm::Value *CodeGenVisitor::visitCallExpr(Call &expr) {
-    // llvm::Value *callee = expr.callee->accept(*this);
+    llvm::Value *calleeVal = expr.callee->accept(*this);
 
-    // std::vector<llvm::Value *> args{};
-    // for (UniqueExpr &arg : expr.arguments) { args.push_back(arg->accept(*this)); }
+    auto *calleeFn = llvm::dyn_cast<llvm::Function>(calleeVal);
+    if (!calleeFn) { throw std::runtime_error("Call target is not a function"); }
 
-    // Callable function = static_cast<Callable>(callee);
-    // return function.call(this, arguments);
+    // TODO: Generate args
+    std::vector<llvm::Value *> args{};
 
-    return nullptr;
+    return builder.CreateCall(calleeFn, args, calleeFn->getReturnType()->isVoidTy() ? "" : "calltmp");
 }
 
 void CodeGenVisitor::visitExpressionStmt(Expression &stmt) {
@@ -262,6 +258,8 @@ void CodeGenVisitor::visitFunctionStmt(Function &stmt) {
     // Create the function inside the module (by default, function is public)
     llvm::Function *function =
         llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, stmt.name.lexeme, module);
+
+    env->declare(*this, stmt.name.lexeme, function);
 
     // Name the function args
     unsigned idx = 0;

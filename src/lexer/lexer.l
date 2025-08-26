@@ -91,7 +91,7 @@ print                       { REPLACE(TokenType::PRINT, yytext); }
 "super"                     { REPLACE(TokenType::SUPER, yytext); }
 "this"                      { REPLACE(TokenType::THIS, yytext); }
 
-"fun"                       { REPLACE(TokenType::FUN, yytext); }
+"fn"                       { REPLACE(TokenType::FUN, yytext); }
 "return"                    { REPLACE(TokenType::RETURN, yytext); }
 
 "if"                        { REPLACE(TokenType::IF, yytext); }

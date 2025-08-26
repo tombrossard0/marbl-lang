@@ -29,6 +29,11 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
         }
 
         void declare(CodeGenVisitor &codeGenVisitor, std::string id, llvm::Value *value) {
+            if (auto *fun = llvm::dyn_cast<llvm::Function>(value)) {
+                variables[id] = fun;
+                return;
+            }
+
             // Allocate space on the stack for the variable
             llvm::AllocaInst *alloca = codeGenVisitor.builder.CreateAlloca(value->getType(), nullptr, id);
             codeGenVisitor.builder.CreateStore(value, alloca);

@@ -1,19 +1,17 @@
-print "hello world!";
+print "Hello world! This is the start of the program!";
 
-let i = 0;
+fn test() {
+    print "This is a test function!";
 
-while (i < 10) {
-    print i;
-    i = i + 1;
+    let i = 0;
+    while (i < 10) {
+        print i;
+        i = i + 1;
+    }
 }
 
-while (i < 20) {
-    print i;
-    i = i + 1;
-}
+test();
 
-fun test() {
-    print "ahah";
-}
+print "End of the programm!";
 
-print "test";
+test();
