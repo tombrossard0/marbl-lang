@@ -8,7 +8,7 @@
 class ParserException : public std::exception {
   public:
     ParserException(Token tok, const std::string &msg) : tok(tok), msg(msg) {
-        if (tok.type == TokenType::T_EOF) {
+        if (tok.tokenType == TokenType::T_EOF) {
             report(tok, "at end", msg);
         } else {
             report(tok, "at '" + tok.lexeme + "'", msg);

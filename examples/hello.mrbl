@@ -1,17 +1,28 @@
 print "Hello world! This is the start of the program!";
 
-fn test() {
+fn test(a) {
     print "This is a test function!";
+    print a;
 
     let i = 0;
     while (i < 10) {
         print i;
         i = i + 1;
     }
+
+    a = "test";
+
+    print a;
 }
 
-test();
+let a = "hello world! from a";
 
-print "End of the programm!";
+test(a);
 
-test();
+print a;
+
+print "End of the program!";
+
+test(a);
+
+test("aaaa");

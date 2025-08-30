@@ -37,7 +37,7 @@ llvm::Value *CodeGenVisitor::visitBinaryExpr(Binary &expr) {
     auto *L = expr.left->accept(*this);
     auto *R = expr.right->accept(*this);
 
-    switch (expr.op.type) {
+    switch (expr.op.tokenType) {
     case TokenType::PLUS:
         if (L->getType()->isDoubleTy()) return builder.CreateFAdd(L, R, "addtmp");
         // if (L->getType()->isPointerTy()) return emitStringConcat(L, R);
@@ -88,7 +88,7 @@ llvm::Value *CodeGenVisitor::visitLogicalExpr(Logical &expr) {
     auto *L = convertToi1(expr.left->accept(*this));
     auto *R = convertToi1(expr.right->accept(*this));
 
-    switch (expr.op.type) {
+    switch (expr.op.tokenType) {
     case TokenType::AND:
         return builder.CreateLogicalAnd(L, R, "andtmp");
 
@@ -102,7 +102,7 @@ llvm::Value *CodeGenVisitor::visitLogicalExpr(Logical &expr) {
 
 llvm::Value *CodeGenVisitor::visitUnaryExpr(Unary &expr) {
     auto *R = expr.right->accept(*this);
-    switch (expr.op.type) {
+    switch (expr.op.tokenType) {
     case TokenType::MINUS:
         if (R->getType()->isDoubleTy()) return builder.CreateFNeg(R, "negtmp");
         return builder.CreateNeg(R, "negtmp");
@@ -140,8 +140,12 @@ llvm::Value *CodeGenVisitor::visitCallExpr(Call &expr) {
     auto *calleeFn = llvm::dyn_cast<llvm::Function>(calleeVal);
     if (!calleeFn) { throw std::runtime_error("Call target is not a function"); }
 
-    // TODO: Generate args
+    // Generate args
     std::vector<llvm::Value *> args{};
+    for (auto &arg : expr.arguments) {
+        llvm::Value *argValue = arg->accept(*this);
+        args.push_back(argValue);
+    }
 
     return builder.CreateCall(calleeFn, args, calleeFn->getReturnType()->isVoidTy() ? "" : "calltmp");
 }
@@ -248,9 +252,9 @@ void CodeGenVisitor::visitBlockStmt(Block &stmt) {
 }
 
 void CodeGenVisitor::visitFunctionStmt(Function &stmt) {
-    // Collect args types (for the moment, takes only int32)
+    // Collect args types (for the moment, takes only one type)
     std::vector<llvm::Type *> argTypes;
-    for (auto &param : stmt.params) { argTypes.push_back(builder.getInt32Ty()); }
+    for (auto &param : stmt.params) { argTypes.push_back(builder.getPtrTy()); }
 
     // Create function type (for the moment, returns only void)
     llvm::FunctionType *funcType = llvm::FunctionType::get(builder.getVoidTy(), argTypes, false);
@@ -279,9 +283,9 @@ void CodeGenVisitor::visitFunctionStmt(Function &stmt) {
 
     // Allocate space on the stack for each param and store them
     for (auto &arg : function->args()) {
-        llvm::AllocaInst *alloca = builder.CreateAlloca(builder.getInt32Ty(), nullptr, arg.getName());
+        llvm::AllocaInst *alloca = builder.CreateAlloca(arg.getType(), nullptr, arg.getName());
         builder.CreateStore(&arg, alloca);
-        env->declare(*this, std::string(arg.getName()), alloca);
+        env->bind(arg.getName().str(), alloca);
     }
 
     // Emit body

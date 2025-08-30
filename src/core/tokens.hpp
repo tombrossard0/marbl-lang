@@ -207,7 +207,7 @@ inline const char *TokenTypeName(TokenType type) {
 
 class Token {
   public:
-    TokenType type;
+    TokenType tokenType;
     std::string lexeme;
     Object literal;
 
@@ -215,13 +215,14 @@ class Token {
     int line;
     int col;
 
-    Token() : type(TokenType::T_SOF), lexeme("T_SOF"), literal("T_SOF"), line(0) {}
+    Token() : tokenType(TokenType::T_SOF), lexeme("T_SOF"), literal("T_SOF"), line(0) {}
     Token(TokenType type, std::string lexeme, Object literal, std::string filename, int line, int col)
-        : type(type), lexeme(lexeme), literal(literal), filename(filename), line(line), col(col) {}
+        : tokenType(type), lexeme(lexeme), literal(literal), filename(filename), line(line), col(col) {}
     ~Token() {};
 
     inline friend std::ostream &operator<<(std::ostream &os, const Token &t) {
-        os << TokenTypeName(t.type) << " " << t.lexeme << " " << t.literal << " " << t.line << ":" << t.col;
+        os << TokenTypeName(t.tokenType) << " " << t.lexeme << " " << t.literal << " " << t.line << ":"
+           << t.col;
         return os;
     };
 };

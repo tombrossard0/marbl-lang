@@ -21,13 +21,13 @@ class Parser {
         return statements;
     }
 
-    bool isAtEnd() { return peek().type == TokenType::T_EOF; }
+    bool isAtEnd() { return peek().tokenType == TokenType::T_EOF; }
 
   private:
     Token previousToken;
 
     Token peek() {
-        if (lexer.currentToken.type == TokenType::T_SOF) lexer.nextToken();
+        if (lexer.currentToken.tokenType == TokenType::T_SOF) lexer.nextToken();
         return lexer.currentToken;
     }
 
@@ -40,7 +40,7 @@ class Parser {
 
     bool check(TokenType type) {
         if (isAtEnd()) return false;
-        return peek().type == type;
+        return peek().tokenType == type;
     }
 
     template <typename... Types> bool match(Types... types) {
@@ -58,9 +58,9 @@ class Parser {
         advance();
 
         while (!isAtEnd()) {
-            if (previousToken.type == SEMICOLON) return;
+            if (previousToken.tokenType == SEMICOLON) return;
 
-            switch (peek().type) {
+            switch (peek().tokenType) {
             case CLASS | FUN | LET | FOR | IF | WHILE | PRINT | RETURN:
                 return;
             default:
@@ -97,32 +97,33 @@ class Parser {
         throw ParserException(peek(), "Expect expression.");
     }
 
-    // UniqueExpr finishCall(UniqueExpr callee) {
-    //     std::vector<UniqueExpr> args{};
-    //     if (!check(RIGHT_PAREN)) {
-    //         do { args.push_back(expression()); } while (match(COMMA));
-    //     }
+    UniqueExpr finishCall(UniqueExpr callee) {
+        std::vector<UniqueExpr> args{};
+        if (!check(RIGHT_PAREN)) {
+            do { args.push_back(expression()); } while (match(COMMA));
+        }
 
-    //     Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
-    //     return std::make_unique<Call>(std::move(callee), paren, std::move(args));
-    // }
+        Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+        return std::make_unique<Call>(std::move(callee), paren, std::move(args));
+    }
 
     UniqueExpr call() {
         // call           ::= primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
         UniqueExpr expr = primary();
 
-        // while (true) {
-        //     if (match(LEFT_PAREN)) {
-        //         expr = finishCall(std::move(expr));
-        //     } else
-        //         break;
-        // }
-
-        if (match(LEFT_PAREN)) {
-            std::vector<UniqueExpr> args{};
-            Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
-            return std::make_unique<Call>(std::move(expr), paren, std::move(args));
+        while (true) {
+            if (match(LEFT_PAREN)) {
+                expr = finishCall(std::move(expr));
+            } else
+                break;
         }
+
+        // if (match(LEFT_PAREN)) {
+        //     std::vector<UniqueExpr> args{};
+
+        //     Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+        //     return std::make_unique<Call>(std::move(expr), paren, std::move(args));
+        // }
 
         return expr;
     }
@@ -322,7 +323,6 @@ class Parser {
         consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
 
         std::vector<Token> params{};
-
         if (!check(RIGHT_PAREN)) {
             do { params.push_back(consume(IDENTIFIER, "Expect parameter name.")); } while (match(COMMA));
         }

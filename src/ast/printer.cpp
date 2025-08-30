@@ -110,8 +110,12 @@ void AstPrinter::visitCallExpr(Call &expr) {
 }
 
 void AstPrinter::visitFunctionStmt(Function &stmt) {
-    std::cout << "fun " << stmt.name.lexeme << "(";
-    for (auto &param : stmt.params) { std::cout << param.lexeme << ", "; }
+    std::cout << "fn " << stmt.name.lexeme << "(";
+    int i = 0;
+    for (auto &param : stmt.params) {
+        std::cout << param.lexeme;
+        if (++i < stmt.params.size()) { std::cout << ", "; }
+    }
     std::cout << ") {";
 
     for (auto &fn_stmt : stmt.body) { fn_stmt->accept(*this); }

@@ -39,6 +39,8 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
             codeGenVisitor.builder.CreateStore(value, alloca);
             variables[id] = alloca;
         }
+
+        void bind(std::string id, llvm::Value *value) { variables[id] = value; }
     };
 
     std::unique_ptr<Environment> env;
