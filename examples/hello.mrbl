@@ -43,3 +43,5 @@ funA("X");
 print clock();
 print clock();
 print clock();
+
+printf("test %s\n", "AAAA");

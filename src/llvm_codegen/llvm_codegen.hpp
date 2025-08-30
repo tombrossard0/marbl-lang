@@ -53,9 +53,15 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
     CodeGenVisitor(const std::string &moduleName)
         : env(std::make_unique<Environment>()), module(moduleName, context), builder(context) {
 
-        auto *funcType = llvm::FunctionType::get(builder.getInt32Ty(), false);
-        auto *function = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, "clock", module);
-        env->declare(*this, "clock", function);
+        auto *clockFn = llvm::Function::Create(llvm::FunctionType::get(builder.getInt32Ty(), false),
+                                               llvm::Function::ExternalLinkage, "clock", module);
+        env->declare(*this, "clock", clockFn);
+
+        auto *printfFn = llvm::Function::Create(
+            llvm::FunctionType::get(builder.getInt32Ty(), llvm::PointerType::get(builder.getInt8Ty(), 0),
+                                    true),
+            llvm::Function::ExternalLinkage, "printf", module);
+        env->declare(*this, "printf", printfFn);
     }
 
     llvm::Value *convertToi1(llvm::Value *value);
