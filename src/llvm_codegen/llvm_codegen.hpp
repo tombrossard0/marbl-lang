@@ -49,30 +49,13 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
     llvm::Module module;
     llvm::IRBuilder<> builder;
 
-    // llvm::Function *strlenFunc;
-    // llvm::Function *mallocFunc;
-    // llvm::Function *memcpyFunc;
-
   public:
     CodeGenVisitor(const std::string &moduleName)
         : env(std::make_unique<Environment>()), module(moduleName, context), builder(context) {
-        // Declare external C functions
-        // strlenFunc = llvm::Function::Create(
-        //     llvm::FunctionType::get(builder.getInt32Ty(), {builder.getIntPtrTy(module.getDataLayout(), 8)},
-        //                             false),
-        //     llvm::Function::ExternalLinkage, "strlen", module);
 
-        // mallocFunc =
-        //     llvm::Function::Create(llvm::FunctionType::get(builder.getIntPtrTy(module.getDataLayout(), 8),
-        //                                                    {builder.getInt32Ty()}, false),
-        //                            llvm::Function::ExternalLinkage, "malloc", module);
-
-        // memcpyFunc = llvm::Function::Create(
-        //     llvm::FunctionType::get(builder.getIntPtrTy(module.getDataLayout(), 8),
-        //                             {builder.getIntPtrTy(module.getDataLayout(), 8),
-        //                              builder.getIntPtrTy(module.getDataLayout(), 8), builder.getInt32Ty()},
-        //                             false),
-        //     llvm::Function::ExternalLinkage, "memcpy", module);
+        auto *funcType = llvm::FunctionType::get(builder.getInt32Ty(), false);
+        auto *function = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, "clock", module);
+        env->declare(*this, "clock", function);
     }
 
     llvm::Value *convertToi1(llvm::Value *value);

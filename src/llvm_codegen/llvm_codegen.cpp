@@ -137,9 +137,6 @@ llvm::Value *CodeGenVisitor::visitAssignExpr(Assign &expr) {
 llvm::Value *CodeGenVisitor::visitCallExpr(Call &expr) {
     llvm::Value *calleeVal = expr.callee->accept(*this);
 
-    auto *calleeFn = llvm::dyn_cast<llvm::Function>(calleeVal);
-    if (!calleeFn) { throw std::runtime_error("Call target is not a function"); }
-
     // Generate args
     std::vector<llvm::Value *> args{};
     for (auto &arg : expr.arguments) {
@@ -147,6 +144,8 @@ llvm::Value *CodeGenVisitor::visitCallExpr(Call &expr) {
         args.push_back(argValue);
     }
 
+    auto *calleeFn = llvm::dyn_cast<llvm::Function>(calleeVal);
+    if (!calleeFn) { throw std::runtime_error("Call target is not a function"); }
     return builder.CreateCall(calleeFn, args, calleeFn->getReturnType()->isVoidTy() ? "" : "calltmp");
 }
 

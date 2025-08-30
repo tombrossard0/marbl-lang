@@ -26,3 +26,20 @@ print "End of the program!";
 test(a);
 
 test("aaaa");
+
+fn funA(x) {
+    fn funB(y) {
+        print "From B";
+        print y;
+    }
+
+    print "From A";
+
+    funB(x);
+}
+
+funA("X");
+
+print clock();
+print clock();
+print clock();
