@@ -334,12 +334,25 @@ class Parser {
         return std::make_unique<Function>(name, params, std::move(body));
     }
 
+    UniqueStmt classDeclaration() {
+        // classDecl         ::= "class" IDENTIFIER "{" function* "}" ;
+        Token name = consume(IDENTIFIER, "Expect class name.");
+        consume(LEFT_BRACE, "Expect '{' after class name.");
+
+        std::vector<Let> fields{};
+        std::vector<Function> methods{};
+
+        consume(RIGHT_BRACE, "Expect '}' after class name.");
+        return std::make_unique<Class>(name, std::move(fields), std::move(methods));
+    }
+
     UniqueStmt declaration() {
         // declaration     ::= classDecl
         //                 |   funDecl
         //                 |   letDecl
         //                 |   statement ;
         try {
+            if (match(CLASS)) return classDeclaration();
             if (match(FUN)) return function("function");
             if (match(LET)) return letDeclaration();
             return statement();

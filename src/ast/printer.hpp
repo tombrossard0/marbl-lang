@@ -23,4 +23,5 @@ class AstPrinter : public ExprVisitor<void>, StmtVisitor<void> {
     void visitIfStmt(If &stmt) override;
     void visitWhileStmt(While &stmt) override;
     void visitFunctionStmt(Function &stmt) override;
+    void visitClassStmt(Class &stmt) override;
 };

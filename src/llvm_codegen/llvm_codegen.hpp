@@ -85,4 +85,5 @@ class CodeGenVisitor : public ExprVisitor<llvm::Value *>, StmtVisitor<void> {
     void visitLetStmt(Let &stmt) override;
     void visitBlockStmt(Block &stmt) override;
     void visitFunctionStmt(Function &stmt) override;
+    void visitClassStmt(Class &stmt) override;
 };

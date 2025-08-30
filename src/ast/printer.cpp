@@ -122,3 +122,8 @@ void AstPrinter::visitFunctionStmt(Function &stmt) {
 
     std::cout << "}";
 }
+
+void AstPrinter::visitClassStmt(Class &stmt) {
+    std::cout << "class " << stmt.name.lexeme << "{";
+    std::cout << "}";
+}

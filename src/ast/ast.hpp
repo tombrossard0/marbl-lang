@@ -35,6 +35,7 @@ class Block;
 class If;
 class While;
 class Function;
+class Class;
 
 #define BINARY_FIELDS(X, Y) X(UniqueExpr, left) X(Token, op) Y(UniqueExpr, right)
 #define GROUPING_FIELDS(X, Y) Y(UniqueExpr, expression)
@@ -52,6 +53,7 @@ class Function;
 #define IF_FIELDS(X, Y) X(UniqueExpr, condition) X(UniqueStmt, thenBranch) Y(UniqueStmt, elseBranch)
 #define WHILE_FIELDS(X, Y) X(UniqueExpr, condition) Y(UniqueStmt, body)
 #define FUNCTION_FIELDS(X, Y) X(Token, name) X(std::vector<Token>, params) Y(std::vector<UniqueStmt>, body)
+#define CLASS_FIELDS(X, Y) X(Token, name) X(std::vector<Let>, fields) Y(std::vector<Function>, methods)
 
 #define EXPR_AST_NODES(X)                                                                                    \
     X(Binary, BINARY_FIELDS, Expr)                                                                           \
@@ -70,7 +72,8 @@ class Function;
     X(Block, BLOCK_FIELDS, Stmt)                                                                             \
     X(If, IF_FIELDS, Stmt)                                                                                   \
     X(While, WHILE_FIELDS, Stmt)                                                                             \
-    X(Function, FUNCTION_FIELDS, Stmt)
+    X(Function, FUNCTION_FIELDS, Stmt)                                                                       \
+    X(Class, CLASS_FIELDS, Stmt)
 
 // ======= Visitor Template =======
 template <typename T> class ExprVisitor {

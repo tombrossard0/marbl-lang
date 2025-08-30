@@ -45,3 +45,13 @@ print clock();
 print clock();
 
 printf("test %s\n", "AAAA");
+
+class A {
+    // a = 3;
+
+    // display() {
+    //     print a;
+    // }
+}
+
+print "AA";
