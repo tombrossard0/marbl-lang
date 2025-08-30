@@ -5,6 +5,6 @@ add_library(llvm_codegen STATIC
 
 target_include_directories(llvm_codegen PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(llvm_codegen PUBLIC
-    core lexer ast parser interpreter
+    core lexer ast parser
     ${llvm_libs}
 )
